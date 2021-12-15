@@ -4,12 +4,11 @@ import multiprocessing
 
 import numpy as np
 
-
 class Sequential:
     '''A group of environments used in sequence.'''
 
-    def __init__(self, environment_builder, max_episode_steps, workers):
-        self.environments = [environment_builder() for _ in range(workers)]
+    def __init__(self, environment_builder, max_episode_steps, workers, index=0):
+        self.environments = [environment_builder(identifier=index*workers+i) for i in range(workers)]
         self.max_episode_steps = max_episode_steps
         self.observation_space = self.environments[0].observation_space
         self.action_space = self.environments[0].action_space
@@ -78,12 +77,16 @@ class Parallel:
         self.workers_per_group = workers_per_group
         self.max_episode_steps = max_episode_steps
 
+    def get_index(self):
+        for i, environment in enumerate(self.environments):
+            environment.id = (index * workers) + i
+
     def initialize(self, seed):
         def proc(action_pipe, index, seed):
             '''Process holding a sequential group of environments.'''
             envs = Sequential(
                 self.environment_builder, self.max_episode_steps,
-                self.workers_per_group)
+                self.workers_per_group, index)
             envs.initialize(seed)
 
             observations = envs.start()

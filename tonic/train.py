@@ -6,6 +6,14 @@ import os
 import tonic
 
 
+def func(env):
+    def build_env(identifier=0):
+        build = env[:-2]
+        build = build + f', identifier={identifier}")'
+        return eval(build)
+    return build_env
+
+
 def train(
     header, agent, environment, trainer, before_training, after_training,
     parallel, sequential, seed, name
@@ -21,13 +29,12 @@ def train(
 
     # Build the agent.
     agent = eval(agent)
-
     # Build the train and test environments.
     _environment = environment
     environment = tonic.environments.distribute(
-        lambda: eval(_environment), parallel, sequential)
+        func(_environment), parallel, sequential)
     test_environment = tonic.environments.distribute(
-        lambda: eval(_environment))
+        func(_environment))
 
     # Choose a name for the experiment.
     if hasattr(test_environment, 'name'):

@@ -46,18 +46,19 @@ def build_environment(
     time_feature=True, see https://arxiv.org/pdf/1712.00378.pdf for more
     details.
     '''
-
     # Build the environment.
-    environment = builder(name, *args, **kwargs)
+    env_args = name.split(',')
+    identifier = env_args[1] if len(env_args) > 1 else 0
+    environment = builder(id=env_args[0], identifier=env_args[1], *args, **kwargs)
 
     # Get the default time limit.
     if max_episode_steps == 'default':
-        max_episode_steps = environment._max_episode_steps
+        max_episode_steps = environment.env._max_episode_steps
 
     # Remove the TimeLimit wrapper if needed.
     if not terminal_timeouts:
-        assert type(environment) == gym.wrappers.TimeLimit, environment
-        environment = environment.env
+        if type(environment) == gym.wrappers.TimeLimit:
+            environment = environment.env
 
     # Add time as a feature if needed.
     if time_feature:

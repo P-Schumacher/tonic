@@ -41,7 +41,7 @@ class MPO(agents.Agent):
 
     def step(self, observations):
         actions = self._step(observations)
-        actions = actions.numpy()
+        actions = actions.cpu().numpy()
 
         # Keep some values for the next update.
         self.last_observations = observations.copy()
@@ -51,7 +51,7 @@ class MPO(agents.Agent):
 
     def test_step(self, observations):
         # Sample actions for testing.
-        return self._test_step(observations).numpy()
+        return self._test_step(observations).cpu().numpy()
 
     def update(self, observations, rewards, resets, terminations):
         # Store the last transitions in the replay.
@@ -91,7 +91,7 @@ class MPO(agents.Agent):
 
             for key in infos:
                 for k, v in infos[key].items():
-                    logger.store(key + '/' + k, v.numpy())
+                    logger.store(key + '/' + k, v.cpu().numpy())
 
         # Update the normalizers.
         if self.model.observation_normalizer:

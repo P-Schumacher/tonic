@@ -56,7 +56,7 @@ class DDPG(agents.Agent):
 
     def test_step(self, observations):
         # Greedy actions for testing.
-        return self._greedy_actions(observations).numpy()
+        return self._greedy_actions(observations).cpu().numpy()
 
     def update(self, observations, rewards, resets, terminations):
         # Store the last transitions in the replay.
@@ -83,7 +83,7 @@ class DDPG(agents.Agent):
             return self.model.actor(observations)
 
     def _policy(self, observations):
-        return self._greedy_actions(observations).numpy()
+        return self._greedy_actions(observations).cpu().numpy()
 
     def _update(self):
         keys = ('observations', 'actions', 'next_observations', 'rewards',
@@ -96,7 +96,7 @@ class DDPG(agents.Agent):
 
             for key in infos:
                 for k, v in infos[key].items():
-                    logger.store(key + '/' + k, v.numpy())
+                    logger.store(key + '/' + k, v.cpu().numpy())
 
         # Update the normalizers.
         if self.model.observation_normalizer:
