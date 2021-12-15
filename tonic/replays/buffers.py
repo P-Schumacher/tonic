@@ -80,7 +80,6 @@ class Buffer:
 
     def get(self, *keys, steps):
         '''Get batches from named buffers.'''
-
         for _ in range(self.batch_iterations):
             total_size = self.size * self.num_workers
             indices = self.np_random.randint(total_size, size=self.batch_size)

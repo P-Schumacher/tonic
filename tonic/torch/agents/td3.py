@@ -46,7 +46,7 @@ class TD3(agents.DDPG):
                 infos = dict(critic=self.critic_updater(**batch))
             for key in infos:
                 for k, v in infos[key].items():
-                    logger.store(key + '/' + k, v.numpy())
+                    logger.store(key + '/' + k, v.cpu().numpy())
 
         # Update the normalizers.
         if self.model.observation_normalizer:

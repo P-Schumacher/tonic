@@ -1,7 +1,6 @@
 '''Builders for distributed training.'''
-
 import multiprocessing
-
+import os
 import numpy as np
 
 class Sequential:
@@ -96,7 +95,6 @@ class Parallel:
                 actions = action_pipe.recv()
                 out = envs.step(actions)
                 self.output_queue.put((index, out))
-
         dummy_environment = self.environment_builder()
         self.observation_space = dummy_environment.observation_space
         self.action_space = dummy_environment.action_space
