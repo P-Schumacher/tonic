@@ -50,9 +50,7 @@ def build_environment(
     details.
     '''
     # Build the environment.
-    env_args = name.split(',')
-    identifier = env_args[1] if len(env_args) > 1 else 0
-    environment = builder(id=env_args[0], identifier=env_args[1], *args, **kwargs)
+    environment = builder(id=name, *args, **kwargs)
 
     # Get the default time limit.
     if max_episode_steps == 'default':

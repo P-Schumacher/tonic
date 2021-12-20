@@ -158,6 +158,7 @@ class Parallel:
 
 def distribute(environment_builder, worker_groups=1, workers_per_group=1):
     '''Distributes workers over parallel and sequential groups.'''
+
     dummy_environment = environment_builder()
     max_episode_steps = dummy_environment.max_episode_steps
     del dummy_environment
@@ -166,7 +167,6 @@ def distribute(environment_builder, worker_groups=1, workers_per_group=1):
         return Sequential(
             environment_builder, max_episode_steps=max_episode_steps,
             workers=workers_per_group)
-
     return Parallel(
         environment_builder, worker_groups=worker_groups,
         workers_per_group=workers_per_group,

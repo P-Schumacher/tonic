@@ -8,11 +8,17 @@ import yaml
 
 import tonic  # noqa
 
+def func(env):
+    def build_env(identifier=0):
+        build = env[:-1]
+        build = build + f', identifier={identifier})'
+        return eval(build)
+    return build_env
+
 
 def play_gym(agent, environment):
     '''Launches an agent in a Gym-based environment.'''
-
-    environment = tonic.environments.distribute(lambda: environment)
+    environment = tonic.environments.distribute(lambda identifier=0: environment)
 
     observations = environment.start()
     environment.render()
@@ -211,7 +217,7 @@ def play(path, checkpoint, seed, header, agent, environment):
     agent = eval(agent)
 
     # Build the environment.
-    environment = eval(environment)
+    environment = func(environment)()
     environment.seed(seed)
 
     # Initialize the agent.

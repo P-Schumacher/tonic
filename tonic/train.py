@@ -10,8 +10,8 @@ import time
 
 def func(env):
     def build_env(identifier=0):
-        build = env[:-2]
-        build = build + f',{identifier}")'
+        build = env[:-1]
+        build = build + f',identifier={identifier})'
         return eval(build)
     return build_env
 
