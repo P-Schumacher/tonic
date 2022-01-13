@@ -1,6 +1,5 @@
 import os
 import time
-
 import numpy as np
 
 from tonic import logger

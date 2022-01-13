@@ -1,15 +1,13 @@
 '''Builders for distributed training.'''
-
 import multiprocessing
-
+import os
 import numpy as np
-
 
 class Sequential:
     '''A group of environments used in sequence.'''
 
-    def __init__(self, environment_builder, max_episode_steps, workers):
-        self.environments = [environment_builder() for _ in range(workers)]
+    def __init__(self, environment_builder, max_episode_steps, workers, index=0):
+        self.environments = [environment_builder(identifier=index*workers+i) for i in range(workers)]
         self.max_episode_steps = max_episode_steps
         self.observation_space = self.environments[0].observation_space
         self.action_space = self.environments[0].action_space
@@ -78,12 +76,16 @@ class Parallel:
         self.workers_per_group = workers_per_group
         self.max_episode_steps = max_episode_steps
 
+    def get_index(self):
+        for i, environment in enumerate(self.environments):
+            environment.id = (index * workers) + i
+
     def initialize(self, seed):
         def proc(action_pipe, index, seed):
             '''Process holding a sequential group of environments.'''
             envs = Sequential(
                 self.environment_builder, self.max_episode_steps,
-                self.workers_per_group)
+                self.workers_per_group, index)
             envs.initialize(seed)
 
             observations = envs.start()
@@ -93,7 +95,6 @@ class Parallel:
                 actions = action_pipe.recv()
                 out = envs.step(actions)
                 self.output_queue.put((index, out))
-
         dummy_environment = self.environment_builder()
         self.observation_space = dummy_environment.observation_space
         self.action_space = dummy_environment.action_space
@@ -157,6 +158,7 @@ class Parallel:
 
 def distribute(environment_builder, worker_groups=1, workers_per_group=1):
     '''Distributes workers over parallel and sequential groups.'''
+
     dummy_environment = environment_builder()
     max_episode_steps = dummy_environment.max_episode_steps
     del dummy_environment
@@ -165,7 +167,6 @@ def distribute(environment_builder, worker_groups=1, workers_per_group=1):
         return Sequential(
             environment_builder, max_episode_steps=max_episode_steps,
             workers=workers_per_group)
-
     return Parallel(
         environment_builder, worker_groups=worker_groups,
         workers_per_group=workers_per_group,

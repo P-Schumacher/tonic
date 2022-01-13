@@ -5,6 +5,15 @@ import os
 
 import tonic
 import yaml
+import time
+
+
+def func(env):
+    def build_env(identifier=0):
+        build = env[:-1]
+        build = build + f',identifier={identifier})'
+        return eval(build)
+    return build_env
 
 
 def train(
@@ -81,13 +90,13 @@ def train(
     # Build the training environment.
     _environment = environment
     environment = tonic.environments.distribute(
-        lambda: eval(_environment), parallel, sequential)
+        func(_environment), parallel, sequential)
     environment.initialize(seed=seed)
-
+    time.sleep(2)
     # Build the testing environment.
     _test_environment = test_environment if test_environment else _environment
     test_environment = tonic.environments.distribute(
-        lambda: eval(_test_environment))
+        func(_test_environment))
     test_environment.initialize(seed=seed + 10000)
 
     # Build the agent.
