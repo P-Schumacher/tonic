@@ -54,7 +54,7 @@ def build_environment(
 
     # Get the default time limit.
     if max_episode_steps == 'default':
-        max_episode_steps = environment.env._max_episode_steps
+        max_episode_steps = environment.env.unwrapped._max_episode_steps
 
     # Remove the TimeLimit wrapper if needed.
     if not terminal_timeouts:

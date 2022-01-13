@@ -20,8 +20,9 @@ class Sequential:
     def start(self):
         '''Used once to get the initial observations.'''
         observations = [env.reset() for env in self.environments]
+        tendon_states = [env.tendon_state_normalized for env in self.environments]
         self.lengths = np.zeros(len(self.environments), int)
-        return np.array(observations, np.float32)
+        return np.array(observations, np.float32), np.array(tendon_states, np.float32)
 
     def step(self, actions):
         next_observations = []  # Observations for the transitions.
@@ -29,6 +30,7 @@ class Sequential:
         resets = []
         terminations = []
         observations = []  # Observations for the actions selection.
+        tendon_states = []
 
         for i in range(len(self.environments)):
             ob, rew, term, _ = self.environments[i].step(actions[i])
@@ -40,6 +42,7 @@ class Sequential:
             rewards.append(rew)
             resets.append(reset)
             terminations.append(term)
+            tendon_states.append(self.environments[i].tendon_state_normalized)
 
             if reset:
                 ob = self.environments[i].reset()
@@ -48,12 +51,13 @@ class Sequential:
             observations.append(ob)
 
         observations = np.array(observations, np.float32)
+        tendon_states=np.array(tendon_states, np.float32)
         infos = dict(
             observations=np.array(next_observations, np.float32),
             rewards=np.array(rewards, np.float32),
             resets=np.array(resets, np.bool),
             terminations=np.array(terminations, np.bool))
-        return observations, infos
+        return observations, tendon_states, infos
 
     def render(self, mode='human', *args, **kwargs):
         outs = []
@@ -118,12 +122,15 @@ class Parallel:
         assert not self.started
         self.started = True
         observations_list = [None for _ in range(self.worker_groups)]
+        tendons_list = [None for _ in range(self.worker_groups)]
 
         for _ in range(self.worker_groups):
-            index, observations = self.output_queue.get()
+            index, (observations, tendon_states)= self.output_queue.get()
             observations_list[index] = observations
+            tendon_states_list[index] = tendon_states  
 
         self.observations_list = np.array(observations_list)
+        self.tendon_states_list = np.array(tendon_states_list)
         self.next_observations_list = np.zeros_like(self.observations_list)
         self.rewards_list = np.zeros(
             (self.worker_groups, self.workers_per_group), np.float32)
@@ -140,20 +147,22 @@ class Parallel:
             pipe.send(actions)
 
         for _ in range(self.worker_groups):
-            index, (observations, infos) = self.output_queue.get()
+            index, (observations, tendon_state, infos) = self.output_queue.get()
             self.observations_list[index] = observations
             self.next_observations_list[index] = infos['observations']
             self.rewards_list[index] = infos['rewards']
             self.resets_list[index] = infos['resets']
             self.terminations_list[index] = infos['terminations']
+            self.tendon_states_list[index] = tendon_state
 
         observations = np.concatenate(self.observations_list)
+        tendon_states = np.concatenate(self.tendon_states_list)
         infos = dict(
             observations=np.concatenate(self.next_observations_list),
             rewards=np.concatenate(self.rewards_list),
             resets=np.concatenate(self.resets_list),
             terminations=np.concatenate(self.terminations_list))
-        return observations, infos
+        return observations, tendon_states, infos
 
 
 def distribute(environment_builder, worker_groups=1, workers_per_group=1):
