@@ -7,6 +7,7 @@ import numpy as np
 import yaml
 
 import tonic  # noqa
+from pudb import set_trace
 
 
 def func(env):
@@ -21,7 +22,7 @@ def play_gym(agent, environment):
     '''Launches an agent in a Gym-based environment.'''
     environment = tonic.environments.distribute(lambda identifier=0: environment)
 
-    observations = environment.start()
+    observations, _ = environment.start()
     environment.render()
 
     score = 0
@@ -35,7 +36,7 @@ def play_gym(agent, environment):
 
     while True:
         actions = agent.test_step(observations, steps)
-        observations, infos = environment.step(actions)
+        observations, _, infos = environment.step(actions)
         agent.test_update(**infos, steps=steps)
         environment.render()
 

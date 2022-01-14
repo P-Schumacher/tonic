@@ -122,7 +122,7 @@ class Parallel:
         assert not self.started
         self.started = True
         observations_list = [None for _ in range(self.worker_groups)]
-        tendons_list = [None for _ in range(self.worker_groups)]
+        tendon_states_list = [None for _ in range(self.worker_groups)]
 
         for _ in range(self.worker_groups):
             index, (observations, tendon_states)= self.output_queue.get()
@@ -139,7 +139,7 @@ class Parallel:
         self.terminations_list = np.zeros(
             (self.worker_groups, self.workers_per_group), np.bool)
 
-        return np.concatenate(self.observations_list)
+        return np.concatenate(self.observations_list), np.concatenate(self.tendon_states_list)
 
     def step(self, actions):
         actions_list = np.split(actions, self.worker_groups)
