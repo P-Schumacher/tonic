@@ -179,8 +179,8 @@ def distribute(environment_builder, worker_groups=1, workers_per_group=1, env_ar
     if worker_groups < 2:
         return Sequential(
             environment_builder, max_episode_steps=max_episode_steps,
-            workers=workers_per_group, env_args)
+            workers=workers_per_group, env_args=env_args)
     return Parallel(
         environment_builder, worker_groups=worker_groups,
         workers_per_group=workers_per_group,
-        max_episode_steps=max_episode_steps, env_args)
+        max_episode_steps=max_episode_steps, env_args=env_args)
