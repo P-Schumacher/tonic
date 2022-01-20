@@ -6,8 +6,11 @@ import numpy as np
 class Sequential:
     '''A group of environments used in sequence.'''
 
-    def __init__(self, environment_builder, max_episode_steps, workers, index=0):
+    def __init__(self, environment_builder, max_episode_steps, workers, index=0, env_args=None):
         self.environments = [environment_builder(identifier=index*workers+i) for i in range(workers)]
+        if env_args is not None:
+            [x.merge_args(env_args) for x in self.environments]
+            [x.apply_args() for x in self.environments]
         self.max_episode_steps = max_episode_steps
         self.observation_space = self.environments[0].observation_space
         self.action_space = self.environments[0].action_space
@@ -73,12 +76,13 @@ class Parallel:
 
     def __init__(
         self, environment_builder, worker_groups, workers_per_group,
-        max_episode_steps
+        max_episode_steps, env_args=None
     ):
         self.environment_builder = environment_builder
         self.worker_groups = worker_groups
         self.workers_per_group = workers_per_group
         self.max_episode_steps = max_episode_steps
+        self.env_args = env_args
 
     def get_index(self):
         for i, environment in enumerate(self.environments):
@@ -89,7 +93,7 @@ class Parallel:
             '''Process holding a sequential group of environments.'''
             envs = Sequential(
                 self.environment_builder, self.max_episode_steps,
-                self.workers_per_group, index)
+                self.workers_per_group, index, self.env_args)
             envs.initialize(seed)
 
             observations = envs.start()
@@ -165,7 +169,7 @@ class Parallel:
         return observations, tendon_states, infos
 
 
-def distribute(environment_builder, worker_groups=1, workers_per_group=1):
+def distribute(environment_builder, worker_groups=1, workers_per_group=1, env_args=None):
     '''Distributes workers over parallel and sequential groups.'''
 
     dummy_environment = environment_builder()
@@ -175,8 +179,8 @@ def distribute(environment_builder, worker_groups=1, workers_per_group=1):
     if worker_groups < 2:
         return Sequential(
             environment_builder, max_episode_steps=max_episode_steps,
-            workers=workers_per_group)
+            workers=workers_per_group, env_args)
     return Parallel(
         environment_builder, worker_groups=worker_groups,
         workers_per_group=workers_per_group,
-        max_episode_steps=max_episode_steps)
+        max_episode_steps=max_episode_steps, env_args)
