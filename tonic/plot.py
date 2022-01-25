@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 
 from tonic import logger
+plt.style.use(['seaborn'])
 
 
 def smooth(vals, window):
@@ -75,8 +76,8 @@ def get_data(
     log_paths = []
     for path in paths:
         if os.path.isdir(path):
-            log_paths.extend(pathlib.Path(path).rglob('log.*'))
-        elif path[-7:-3] == 'log.':
+            log_paths.extend(pathlib.Path(path).rglob('log_0.*'))
+        elif path[-7:-3] == 'log_0.':
             log_paths.append(path)
 
     # Load the data from the log files.
@@ -84,7 +85,7 @@ def get_data(
         sub_path, file = os.path.split(path)
         dfs = {}
 
-        if file == 'log.csv':
+        if file == 'log_0.csv':
             # Extract the environment, agent and seed from the paths.
             env, agent, seed = sub_path.split(os.sep)[-3:]
 
@@ -101,7 +102,7 @@ def get_data(
                 continue
             dfs[seed] = df_seed
 
-        elif file == 'log.pkl':
+        elif file == 'log_0.pkl':
             # Extract the environment, agent and seed from the paths.
             env, agent = sub_path.split(os.sep)[-2:]
 
@@ -395,7 +396,7 @@ def plot(
             ncol=ncol, numpoints=1)
         legend_frame = legend.get_frame()
         legend_frame.set_linewidth(0)
-        fig.tight_layout(pad=0, w_pad=0, h_pad=1.0)
+        fig.tight_layout(pad=0, w_pad=0.5, h_pad=1.0)
         fig.canvas.draw()
         renderer = legend_ax.get_renderer_cache()
         h_packer = legend.get_children()[0].get_children()[1]

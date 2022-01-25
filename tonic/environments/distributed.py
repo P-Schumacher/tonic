@@ -15,6 +15,7 @@ class Sequential:
         self.observation_space = self.environments[0].observation_space
         self.action_space = self.environments[0].action_space
         self.name = self.environments[0].name
+        self.num_workers = workers
 
     def initialize(self, seed):
         for i, environment in enumerate(self.environments):
@@ -89,6 +90,7 @@ class Parallel:
             environment.id = (index * workers) + i
 
     def initialize(self, seed):
+        print('im here im there imevery fucking where')
         def proc(action_pipe, index, seed):
             '''Process holding a sequential group of environments.'''
             envs = Sequential(
@@ -115,7 +117,7 @@ class Parallel:
         for i in range(self.worker_groups):
             pipe, worker_end = multiprocessing.Pipe()
             self.action_pipes.append(pipe)
-            group_seed = seed + i * self.workers_per_group
+            group_seed = seed * (self.worker_groups * self.workers_per_group) + i * self.workers_per_group
             process = multiprocessing.Process(
                 target=proc, args=(worker_end, i, group_seed))
             process.daemon = True
