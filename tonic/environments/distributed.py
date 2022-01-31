@@ -71,6 +71,10 @@ class Sequential:
         if mode != 'human':
             return np.array(outs)
 
+    def render_substep(self):
+        for env in self.environments:
+            env.render_substep()
+
 
 class Parallel:
     '''A group of sequential environments used in parallel.'''

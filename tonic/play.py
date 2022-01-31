@@ -22,8 +22,9 @@ def play_gym(agent, environment):
     '''Launches an agent in a Gym-based environment.'''
     environment = tonic.environments.distribute(lambda identifier=0: environment)
 
-    observations, _ = environment.start()
+    observations, tendon_states = environment.start()
     environment.render()
+    environment.render_substep()
 
     score = 0
     length = 0
@@ -35,8 +36,8 @@ def play_gym(agent, environment):
     episodes = 0
 
     while True:
-        actions = agent.test_step(observations, steps)
-        observations, _, infos = environment.step(actions)
+        actions = agent.test_step(observations, steps, tendon_states)
+        observations, tendon_states, infos = environment.step(actions)
         agent.test_update(**infos, steps=steps)
         environment.render()
 
@@ -203,7 +204,7 @@ def play(path, checkpoint, seed, header, agent, environment):
         with open(arguments_path, 'r') as config_file:
             config = yaml.load(config_file, Loader=yaml.FullLoader)
         config = argparse.Namespace(**config)
-
+        print(config)
         header = header or config.header
         agent = agent or config.agent
         environment = environment or config.test_environment
