@@ -94,7 +94,6 @@ class Parallel:
             environment.id = (index * workers) + i
 
     def initialize(self, seed):
-        print('im here im there imevery fucking where')
         def proc(action_pipe, index, seed):
             '''Process holding a sequential group of environments.'''
             envs = Sequential(
