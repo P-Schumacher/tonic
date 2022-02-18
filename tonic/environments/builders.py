@@ -29,7 +29,6 @@ def bullet_environment(*args, **kwargs):
 
 def control_suite_environment(*args, **kwargs):
     '''Returns a wrapped Control Suite environment.'''
-
     def _builder(name, *args, **kwargs):
         domain, task = name.split('-')
         environment = ControlSuiteEnvironment(
@@ -50,11 +49,14 @@ def build_environment(
     details.
     '''
     # Build the environment.
-    environment = builder(id=name, *args, **kwargs)
+    environment = builder(name, *args, **kwargs)
 
     # Get the default time limit.
     if max_episode_steps == 'default':
-        max_episode_steps = environment.env.unwrapped._max_episode_steps
+        if hasattr(environment, '_max_episode_steps'):
+            max_episode_steps = environment._max_episode_steps
+        else:
+            max_episode_steps = environment.env.unwrapped._max_episode_steps
 
     # Remove the TimeLimit wrapper if needed.
     if not terminal_timeouts:

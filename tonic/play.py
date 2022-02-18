@@ -1,5 +1,6 @@
 '''Script used to play with trained agents.'''
 
+from pudb import set_trace
 import argparse
 import os
 
@@ -10,6 +11,10 @@ import tonic  # noqa
 
 
 def func(env):
+    print(env)
+    if 'ostrich' in env:
+        return lambda: eval(env)
+
     def build_env(identifier=0):
         build = env[:-1]
         build = build + f', identifier={identifier})'
@@ -92,8 +97,8 @@ def play_control_suite(agent, environment):
 
         def reset(self):
             '''Mimics a dm_control reset for the viewer.'''
-
             self.observations = self.environment.reset()[None]
+            self.tendon_states = self.physics.tendon_states()
 
             self.score = 0
             self.length = 0
@@ -130,6 +135,7 @@ def play_control_suite(agent, environment):
                 print(f'Global max reward: {self.max_reward:,.3f}')
 
             self.observations = ob[None]
+            self.tendon_states = self.physics.tendon_states()
             self.infos = dict(
                 observations=ob[None], rewards=np.array([rew]),
                 resets=np.array([done]), terminations=np.array([term]))
@@ -145,6 +151,7 @@ def play_control_suite(agent, environment):
         if environment.infos is not None:
             agent.test_update(**environment.infos, steps=environment.steps)
             environment.steps += 1
+        # return agent.test_step(environment.observations, environment.steps, environment.tendon_states)
         return agent.test_step(environment.observations, environment.steps)
 
     # Launch the viewer with the wrapped environment and policy.
