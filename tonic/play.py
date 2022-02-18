@@ -7,7 +7,6 @@ import numpy as np
 import yaml
 
 import tonic  # noqa
-from pudb import set_trace
 
 
 def func(env):
