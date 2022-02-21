@@ -7,6 +7,8 @@ import torch
 from tonic import agents, logger  # noqa
 
 
+BUFFER_CHECKPOINT_FIELDS = ['buffers', 'index', 'num_workers', 'max_size']
+
 class Agent(agents.Agent):
     def initialize(self, seed=None):
         if seed is not None:
@@ -20,6 +22,7 @@ class Agent(agents.Agent):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(self.model.state_dict(), path)
         self.save_optimizer(path)
+        self.save_buffer(path)
 
     def load(self, path):
         path = path + '.pt'
@@ -30,6 +33,7 @@ class Agent(agents.Agent):
             load_fn = torch.load
         self.model.load_state_dict(load_fn(path))
         self.load_optimizer(load_fn, path)
+        self.load_buffer(load_fn, path)
 
     def save_optimizer(self, path):
         if hasattr(self, 'actor_updater'):
@@ -47,6 +51,19 @@ class Agent(agents.Agent):
         if hasattr(self, 'critic_updater'):
             critic_path = self.get_path(path, 'critic')
             self.critic_updater.optimizer.load_state_dict(load_fn(critic_path))
+
+    def save_buffer(self, path):
+        if hasattr(self.replay, 'buffers'):
+            for field in BUFFER_CHECKPOINT_FIELDS:
+                save_path = self.get_path(path, field)
+                torch.save(getattr(self.replay, field), save_path)
+            # torch.save(self.replay, save_path)
+
+    def load_buffer(self, load_fn, path):
+        if hasattr(self.replay, 'buffers'):
+            for field in BUFFER_CHECKPOINT_FIELDS:
+                buffer_path = self.get_path(path, field)
+                setattr(self.replay, field, load_fn(buffer_path))
 
     def get_path(self, path, post_fix):
         return path.split('step')[0] + post_fix + '.pt'
