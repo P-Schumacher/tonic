@@ -7,7 +7,12 @@ class Sequential:
     '''A group of environments used in sequence.'''
 
     def __init__(self, environment_builder, max_episode_steps, workers, index=0, env_args=None):
-        self.environments = [environment_builder(identifier=index*workers+i) for i in range(workers)]
+        if hasattr(environment_builder().unwrapped, 'environment'):
+            # its a deepmind env
+            self.environments = [environment_builder() for i in range(workers)]
+        else:
+            # its a gym env
+            self.environments = [environment_builder(identifier=index*workers+i) for i in range(workers)]
         if env_args is not None:
             [x.merge_args(env_args) for x in self.environments]
             [x.apply_args() for x in self.environments]
@@ -24,7 +29,7 @@ class Sequential:
     def start(self):
         '''Used once to get the initial observations.'''
         observations = [env.reset() for env in self.environments]
-        tendon_states = [env.tendon_state_normalized for env in self.environments]
+        tendon_states = [env.tendon_states for env in self.environments]
         self.lengths = np.zeros(len(self.environments), int)
         return np.array(observations, np.float32), np.array(tendon_states, np.float32)
 
@@ -46,7 +51,7 @@ class Sequential:
             rewards.append(rew)
             resets.append(reset)
             terminations.append(term)
-            tendon_states.append(self.environments[i].tendon_state_normalized)
+            tendon_states.append(self.environments[i].tendon_states)
 
             if reset:
                 ob = self.environments[i].reset()

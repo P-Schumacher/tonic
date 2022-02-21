@@ -155,6 +155,10 @@ class ControlSuiteEnvironment(gym.core.Env):
         return self.environment.physics.render(
             height=height, width=width, camera_id=camera_id)
 
+    @property
+    def tendon_states(self):
+        return self.environment.physics.tendon_states()
+
 
 # Aliases.
 Gym = gym_environment

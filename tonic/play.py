@@ -151,8 +151,8 @@ def play_control_suite(agent, environment):
         if environment.infos is not None:
             agent.test_update(**environment.infos, steps=environment.steps)
             environment.steps += 1
-        # return agent.test_step(environment.observations, environment.steps, environment.tendon_states)
-        return agent.test_step(environment.observations, environment.steps)
+        return agent.test_step(environment.observations, environment.steps, environment.tendon_states)
+        # return agent.test_step(environment.observations, environment.steps)
 
     # Launch the viewer with the wrapped environment and policy.
     viewer.launch(environment, policy)

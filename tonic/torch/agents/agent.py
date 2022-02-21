@@ -31,8 +31,11 @@ class Agent(agents.Agent):
         else:
             load_fn = torch.load
         self.model.load_state_dict(load_fn(path))
-        self.load_optimizer(load_fn, path)
-        self.load_buffer(load_fn, path)
+        try:
+            self.load_optimizer(load_fn, path)
+            self.load_buffer(load_fn, path)
+        except:
+            print('Failure, only loading policy')
 
     def save_optimizer(self, path):
         if hasattr(self, 'actor_updater'):

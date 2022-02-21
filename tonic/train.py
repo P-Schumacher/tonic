@@ -8,13 +8,25 @@ import yaml
 import time
 
 
-def func(env):
-    def build_env(identifier=0):
-        build = env[:-1]
-        build = build + f',identifier={identifier})'
-        return eval(build)
-    return build_env
+# def func(env):
+#     def build_env(identifier=0):
+#         build = env[:-1]
+#         build = build + f',identifier={identifier})'
+#         return eval(build)
+#     return build_env
 
+def func(env, preid=5, parallel=1, sequential=1):
+    print(env)
+    if 'ostrich' in env:
+        return lambda: eval(env)
+
+    def build_env(identifier=0):
+        id_eff = preid * (parallel * sequential) + identifier
+        build = env[:-1]
+        build = build + f',identifier={id_eff})'
+        return eval(build)
+
+    return build_env
 
 def train(
     header, agent, environment, test_environment, trainer, before_training,

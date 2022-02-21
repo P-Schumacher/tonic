@@ -18,7 +18,7 @@ class Buffer:
         self.discount_factor = discount_factor
         self.steps_before_batches = steps_before_batches
         self.steps_between_batches = steps_between_batches
-        self.checkpoint_fields = ['buffers', 'index', 'num_workers', 'max_size']
+        self.checkpoint_fields = ['buffers', 'index', 'num_workers', 'max_size', 'size']
 
     def initialize(self, seed=None):
         self.np_random = np.random.RandomState(seed)
@@ -98,10 +98,13 @@ class Buffer:
                 torch.save(getattr(self, field), save_path)
 
     def load(self, load_fn, path):
-        if hasattr(self, 'buffers'):
-            for field in self.checkpoint_fields:
-                buffer_path = self.get_path(path, field)
-                setattr(self, field, load_fn(buffer_path))
+        try:
+            if hasattr(self, 'buffers'):
+                for field in self.checkpoint_fields:
+                    buffer_path = self.get_path(path, field)
+                    setattr(self, field, load_fn(buffer_path))
+        except:
+            print('Error in buffer loading, it is freshly initialized')
 
     def get_path(self, path, post_fix):
         return path.split('step')[0] + post_fix + '.pt'
