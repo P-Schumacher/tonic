@@ -7,7 +7,6 @@ import torch
 from tonic import agents, logger  # noqa
 
 
-BUFFER_CHECKPOINT_FIELDS = ['buffers', 'index', 'num_workers', 'max_size']
 
 class Agent(agents.Agent):
     def initialize(self, seed=None):
@@ -37,33 +36,39 @@ class Agent(agents.Agent):
 
     def save_optimizer(self, path):
         if hasattr(self, 'actor_updater'):
-            actor_path = self.get_path(path, 'actor')
-            torch.save(self.actor_updater.optimizer.state_dict(), actor_path)
+            if hasattr(self.actor_updater, 'optimizer'):
+                opt_path = self.get_path(path, 'actor')
+                torch.save(self.actor_updater.optimizer.state_dict(), opt_path)
+            else:
+                # so far, only MPO has different optimizers
+                opt_path = self.get_path(path, 'actor')
+                torch.save(self.actor_updater.actor_optimizer.state_dict(), opt_path)
+                opt_path = self.get_path(path, 'dual')
+                torch.save(self.actor_updater.dual_optimizer.state_dict(), opt_path)
         if hasattr(self, 'critic_updater'):
-            critic_path = self.get_path(path, 'critic')
-            torch.save(self.critic_updater.optimizer.state_dict(), critic_path)
+            opt_path = self.get_path(path, 'critic')
+            torch.save(self.critic_updater.optimizer.state_dict(), opt_path)
 
     def load_optimizer(self, load_fn, path):
         if hasattr(self, 'actor_updater'):
-            actor_path = self.get_path(path, 'actor')
-            self.actor_updater.optimizer.load_state_dict(load_fn(actor_path))
+            if hasattr(self.actor_updater, 'optimizer'):
+                opt_path = self.get_path(path, 'actor')
+                self.actor_updater.optimizer.load_state_dict(load_fn(opt_path))
+            else:
+                opt_path = self.get_path(path, 'actor')
+                self.actor_updater.actor_optimizer.load_state_dict(load_fn(opt_path))
+                opt_path = self.get_path(path, 'dual')
+                self.actor_updater.dual_optimizer.load_state_dict(load_fn(opt_path))
 
         if hasattr(self, 'critic_updater'):
-            critic_path = self.get_path(path, 'critic')
-            self.critic_updater.optimizer.load_state_dict(load_fn(critic_path))
+            opt_path = self.get_path(path, 'critic')
+            self.critic_updater.optimizer.load_state_dict(load_fn(opt_path))
 
     def save_buffer(self, path):
-        if hasattr(self.replay, 'buffers'):
-            for field in BUFFER_CHECKPOINT_FIELDS:
-                save_path = self.get_path(path, field)
-                torch.save(getattr(self.replay, field), save_path)
-            # torch.save(self.replay, save_path)
+        self.replay.save(path)
 
     def load_buffer(self, load_fn, path):
-        if hasattr(self.replay, 'buffers'):
-            for field in BUFFER_CHECKPOINT_FIELDS:
-                buffer_path = self.get_path(path, field)
-                setattr(self.replay, field, load_fn(buffer_path))
+        self.replay.load(load_fn, path)
 
     def get_path(self, path, post_fix):
         return path.split('step')[0] + post_fix + '.pt'

@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 
 class Buffer:
@@ -17,6 +18,7 @@ class Buffer:
         self.discount_factor = discount_factor
         self.steps_before_batches = steps_before_batches
         self.steps_between_batches = steps_between_batches
+        self.checkpoint_fields = ['buffers', 'index', 'num_workers', 'max_size']
 
     def initialize(self, seed=None):
         self.np_random = np.random.RandomState(seed)
@@ -88,3 +90,18 @@ class Buffer:
             yield {k: self.buffers[k][rows, columns] for k in keys}
 
         self.last_steps = steps
+
+    def save(self, path):
+        if hasattr(self, 'buffers'):
+            for field in self.checkpoint_fields:
+                save_path = self.get_path(path, field)
+                torch.save(getattr(self, field), save_path)
+
+    def load(self, load_fn, path):
+        if hasattr(self, 'buffers'):
+            for field in self.checkpoint_fields:
+                buffer_path = self.get_path(path, field)
+                setattr(self, field, load_fn(buffer_path))
+
+    def get_path(self, path, post_fix):
+        return path.split('step')[0] + post_fix + '.pt'
