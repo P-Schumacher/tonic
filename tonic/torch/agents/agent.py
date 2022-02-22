@@ -22,6 +22,7 @@ class Agent(agents.Agent):
         torch.save(self.model.state_dict(), path)
         self.save_optimizer(path)
         self.save_buffer(path)
+        self.save_observation_normalizer(path)
 
     def load(self, path):
         path = path + '.pt'
@@ -34,8 +35,49 @@ class Agent(agents.Agent):
         try:
             self.load_optimizer(load_fn, path)
             self.load_buffer(load_fn, path)
+            # self.load_observation_normalizer(load_fn, path)
         except:
-            print('Failure, only loading policy')
+            print('Failure in loading model supplements, only loading policy now')
+
+    def save_return_normalizer(self, path):
+        # if hasattr(self.model, 'return_normalizer'):
+        #     reno = self.model.return_normalizer
+        #     norm_path = self.get_path(path, 'ret_norm')
+        #     ret_norm_dict = {'clip': reno.clip,
+        #                      'count': reno.count,
+        #                      'mean' : reno.mean,
+        #                      'mean_sq': reno.mean_sq,
+        #                      'new_count': reno.new_count,
+        #                      'new_sum': reno.new_sum,
+        #                      'new_sum_sq': reno.new_sum_sq,
+        #                      'std': reno.std,
+        #                      '_mean': reno._mean,
+        #                      '_std': reno._std}
+        #     torch.save(ret_norm_dict, norm_path)
+        raise NotImplementedError()
+
+    def save_observation_normalizer(self, path):
+        if hasattr(self.model, 'observation_normalizer'):
+            ono = self.model.observation_normalizer
+            norm_path = self.get_path(path, 'obs_norm')
+            obs_norm_dict = {'clip': ono.clip,
+                             'count': ono.count,
+                             'mean' : ono.mean,
+                             'mean_sq': ono.mean_sq,
+                             'new_count': ono.new_count,
+                             'new_sum': ono.new_sum,
+                             'new_sum_sq': ono.new_sum_sq,
+                             'std': ono.std,
+                             '_mean': ono._mean,
+                             '_std': ono._std}
+            torch.save(obs_norm_dict, norm_path)
+
+    def load_observation_normalizer(self, load_fn, path):
+        if hasattr(self.model, 'observation_normalizer'):
+            norm_path = self.get_path(path, 'obs_norm')
+            load_dict = load_fn(norm_path)
+            for k, v in load_dict.items():
+                setattr(self.model.observation_normalizer, k, v)
 
     def save_optimizer(self, path):
         if hasattr(self, 'actor_updater'):
