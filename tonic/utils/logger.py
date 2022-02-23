@@ -5,6 +5,7 @@ import time
 import numpy as np
 import termcolor
 import yaml
+import torch
 
 
 current_logger = None
@@ -15,7 +16,8 @@ class Logger:
 
     def __init__(self, path=None, width=60, script_path=None, config=None, loaded_steps=0):
         self.path = path or str(time.time())
-        self.log_file_path = os.path.join(self.path, f'log_{loaded_steps}.csv')
+        # self.log_file_path = os.path.join(self.path, f'log_{loaded_steps}.csv')
+        self.log_file_path = os.path.join(self.path, f'log.csv')
 
         # Save the launch script.
         if script_path:
@@ -236,3 +238,26 @@ def warning(msg, color='yellow'):
 
 def error(msg, color='red'):
     print(termcolor.colored('Error: ' + msg, color, attrs=['bold']))
+
+
+def save(path):
+    logger = get_current_logger()
+    log_dict = {'stat_keys': logger.stat_keys,
+                'known_keys': logger.known_keys,
+                'console_formats': logger.console_formats,
+                'final_keys': logger.final_keys}
+    log_path = create_path(path, 'logger')
+    torch.save(log_dict, log_path)
+
+
+def load(path):
+    logger = get_current_logger()
+    log_path = create_path(path, 'logger')
+    log_dict = torch.load(log_path)
+    for k, v in log_dict.items():
+        setattr(logger, k, v)
+
+
+def create_path(path, post_fix):
+    return path.split('step')[0] + post_fix + '.pt'
+

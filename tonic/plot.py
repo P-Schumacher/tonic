@@ -76,8 +76,8 @@ def get_data(
     log_paths = []
     for path in paths:
         if os.path.isdir(path):
-            log_paths.extend(pathlib.Path(path).rglob('log_0.*'))
-        elif path[-7:-3] == 'log_0.':
+            log_paths.extend(pathlib.Path(path).rglob('log.*'))
+        elif path[-7:-3] == 'log.':
             log_paths.append(path)
 
     # Load the data from the log files.
@@ -85,7 +85,7 @@ def get_data(
         sub_path, file = os.path.split(path)
         dfs = {}
 
-        if file == 'log_0.csv':
+        if file == 'log.csv':
             # Extract the environment, agent and seed from the paths.
             env, agent, seed = sub_path.split(os.sep)[-3:]
 
@@ -102,7 +102,7 @@ def get_data(
                 continue
             dfs[seed] = df_seed
 
-        elif file == 'log_0.pkl':
+        elif file == 'log.pkl':
             # Extract the environment, agent and seed from the paths.
             env, agent = sub_path.split(os.sep)[-2:]
 
