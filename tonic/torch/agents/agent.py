@@ -35,7 +35,7 @@ class Agent(agents.Agent):
         try:
             self.load_optimizer(load_fn, path)
             self.load_buffer(load_fn, path)
-            # self.load_observation_normalizer(load_fn, path)
+            self.load_observation_normalizer(load_fn, path)
         except:
             print('Failure in loading model supplements, only loading policy now')
 
@@ -64,9 +64,6 @@ class Agent(agents.Agent):
                              'count': ono.count,
                              'mean' : ono.mean,
                              'mean_sq': ono.mean_sq,
-                             'new_count': ono.new_count,
-                             'new_sum': ono.new_sum,
-                             'new_sum_sq': ono.new_sum_sq,
                              'std': ono.std,
                              '_mean': ono._mean,
                              '_std': ono._std}
