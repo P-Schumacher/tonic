@@ -14,9 +14,8 @@ current_logger = None
 class Logger:
     '''Logger used to display and save logs, and save experiment configs.'''
 
-    def __init__(self, path=None, width=60, script_path=None, config=None, loaded_steps=0):
+    def __init__(self, path=None, width=60, script_path=None, config=None):
         self.path = path or str(time.time())
-        # self.log_file_path = os.path.join(self.path, f'log_{loaded_steps}.csv')
         self.log_file_path = os.path.join(self.path, f'log.csv')
 
         # Save the launch script.
