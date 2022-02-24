@@ -24,20 +24,21 @@ class Agent(agents.Agent):
         self.save_buffer(path)
         self.save_observation_normalizer(path)
 
-    def load(self, path):
+    def load(self, path, play=False):
         path = path + '.pt'
         logger.log(f'\nLoading weights from {path}')
         if not torch.cuda.is_available():
             load_fn = partial(torch.load, map_location='cpu')
         else:
-            load_fn = torch.load
+            load_fn = partial(torch.load, map_location='cuda')
         self.model.load_state_dict(load_fn(path))
-        try:
-            self.load_optimizer(load_fn, path)
-            self.load_buffer(load_fn, path)
-            self.load_observation_normalizer(load_fn, path)
-        except:
-            print('Failure in loading model supplements, only loading policy now')
+        if not play:
+            try:
+                self.load_optimizer(load_fn, path)
+                self.load_buffer(load_fn, path)
+                self.load_observation_normalizer(load_fn, path)
+            except:
+                print('Failure in loading model supplements, only loading policy now')
 
     def save_return_normalizer(self, path):
         # if hasattr(self.model, 'return_normalizer'):

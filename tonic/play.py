@@ -236,7 +236,7 @@ def play(path, checkpoint, seed, header, agent, environment):
 
     # Load the weights of the agent form a checkpoint.
     if checkpoint_path:
-        agent.load(checkpoint_path)
+        agent.load(checkpoint_path, play=True)
 
     # Play with the agent in the environment.
     if isinstance(environment, tonic.environments.wrappers.ActionRescaler):
