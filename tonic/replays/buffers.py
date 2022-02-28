@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import tonic 
 
 
 class Buffer:
@@ -92,12 +93,16 @@ class Buffer:
         self.last_steps = steps
 
     def save(self, path):
+        tonic.logger.log('Not saving buffer')
+        return None
         if hasattr(self, 'buffers'):
             for field in self.checkpoint_fields:
                 save_path = self.get_path(path, field)
                 torch.save(getattr(self, field), save_path)
 
     def load(self, load_fn, path):
+        tonic.logger.log('Not loading buffer')
+        return None
         try:
             if hasattr(self, 'buffers'):
                 for field in self.checkpoint_fields:
