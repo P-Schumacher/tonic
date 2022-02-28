@@ -117,6 +117,9 @@ class ControlSuiteEnvironment(gym.core.Env):
         try:
             time_step = self.environment.step(action)
             observation = _flatten_observation(time_step.observation)
+            muscles_dep = self.environment.physics.tendon_states()
+            if np.any(np.isnan(observation)) or np.any(np.isnan(muscles_dep)):
+                raise Exception('NaN Obervation found, resetting')
             reward = time_step.reward
 
             # Remove terminations from timeouts.
@@ -125,8 +128,8 @@ class ControlSuiteEnvironment(gym.core.Env):
                 done = self.environment.task.get_termination(
                     self.environment.physics)
                 done = done is not None
-
             self.last_time_step = time_step
+            self.muscles_dep = muscles_dep
 
         # In case MuJoCo crashed.
         except Exception as e:
@@ -139,6 +142,7 @@ class ControlSuiteEnvironment(gym.core.Env):
             logger.error(error)
             observation = _flatten_observation(self.last_time_step.observation)
             observation = np.zeros_like(observation)
+            self.muscles_dep = np.zeros_like(self.muscles_dep)
             reward = 0.
             done = True
 
@@ -146,7 +150,12 @@ class ControlSuiteEnvironment(gym.core.Env):
 
     def reset(self):
         time_step = self.environment.reset()
+        muscles_dep = self.environment.physics.tendon_states()
+        if np.any(np.isnan(_flatten_observation(time_step.observation))) or np.any(np.isnan(muscles_dep)):
+            self.reset()
+            print('Resetting because of NaNs on reset')
         self.last_time_step = time_step
+        self.muscles_dep = muscles_dep
         return _flatten_observation(time_step.observation)
 
     def render(self, mode='rgb_array', height=None, width=None, camera_id=0):
