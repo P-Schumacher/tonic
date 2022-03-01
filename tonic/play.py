@@ -98,7 +98,7 @@ def play_control_suite(agent, environment):
         def reset(self):
             '''Mimics a dm_control reset for the viewer.'''
             self.observations = self.environment.reset()[None]
-            self.muscles_dep = self.muscles_dep()
+            self.muscles_dep = self.environment.muscles_dep
 
             self.score = 0
             self.length = 0
@@ -135,7 +135,7 @@ def play_control_suite(agent, environment):
                 print(f'Global max reward: {self.max_reward:,.3f}')
 
             self.observations = ob[None]
-            self.muscles_dep = self.muscles_dep()
+            self.muscles_dep = self.environment.muscles_dep
             self.infos = dict(
                 observations=ob[None], rewards=np.array([rew]),
                 resets=np.array([done]), terminations=np.array([term]))
