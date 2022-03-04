@@ -93,16 +93,18 @@ class Buffer:
         self.last_steps = steps
 
     def save(self, path):
-        tonic.logger.log('Not saving buffer')
-        return None
+        tonic.logger.log('Saving buffer')
+        # return None
         if hasattr(self, 'buffers'):
             for field in self.checkpoint_fields:
                 save_path = self.get_path(path, field)
                 torch.save(getattr(self, field), save_path)
 
     def load(self, load_fn, path):
-        tonic.logger.log('Not loading buffer')
-        return None
+        tonic.logger.log('Loading buffer')
+        # return None
+        # from pudb import set_trace
+        # set_trace()
         try:
             if hasattr(self, 'buffers'):
                 for field in self.checkpoint_fields:

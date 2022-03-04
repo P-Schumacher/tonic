@@ -27,7 +27,7 @@ class Agent(agents.Agent):
     def load(self, path, play=False):
         path = path + '.pt'
         logger.log(f'\nLoading weights from {path}')
-        if True: # not torch.cuda.is_available():
+        if  not torch.cuda.is_available():
             load_fn = partial(torch.load, map_location='cpu')
         else:
             load_fn = partial(torch.load, map_location='cuda')
