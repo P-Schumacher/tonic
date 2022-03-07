@@ -43,7 +43,7 @@ class Sequential:
 
         for i in range(len(self.environments)):
             ob, rew, term, _ = self.environments[i].step(actions[i])
-
+            muscle = self.environments[i].muscles_dep
             self.lengths[i] += 1
             # Timeouts trigger resets but are not true terminations.
             reset = term or self.lengths[i] == self.max_episode_steps
@@ -51,13 +51,14 @@ class Sequential:
             rewards.append(rew)
             resets.append(reset)
             terminations.append(term)
-            muscles_dep.append(self.environments[i].muscles_dep)
 
             if reset:
                 ob = self.environments[i].reset()
+                muscle = self.environments[i].muscles_dep
                 self.lengths[i] = 0
 
             observations.append(ob)
+            muscles_dep.append(muscle)
 
         observations = np.array(observations, np.float32)
         muscles_dep=np.array(muscles_dep, np.float32)
