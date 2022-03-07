@@ -97,8 +97,38 @@ class Buffer:
         # return None
         if hasattr(self, 'buffers'):
             for field in self.checkpoint_fields:
-                save_path = self.get_path(path, field)
-                torch.save(getattr(self, field), save_path)
+                if not field == 'buffers':
+                    save_path = self.get_path(path, field)
+                    torch.save(getattr(self, field), save_path)
+                else:
+                    self.save_buffer_incrementally(path)
+
+    def save_buffer_incrementally(self, path):
+        npartitions = 10
+        for i in range(npartitions):
+            partition = int(self.max_size / npartitions)
+            save_path = self.get_path(path, f'buffer_{partition}')
+            buffer_save_dict = {}
+            for k,v in self.buffers.items():
+                if len(v.shape) > 2:
+                    buffer_save_dict[k] = v[i * partition: i * partition + partition, :, :]
+                else:
+                    buffer_save_dict[k] = v[i * partition: i * partition + partition, :]
+            torch.save(buffer_save_dict, save_path)
+
+    def load_buffer_incrementally(self, path, load_fn):
+        from pudb import set_trace
+        set_trace()
+        npartitions = 10
+        for i in range(npartitions):
+            partition = int(self.max_size / npartitions)
+            load_path = self.get_path(path, f'buffer_{partition}')
+            buffer_load_dict = load_fn(load_path)
+            for k,v in buffer_load_dict.items():
+                if len(v.shape) > 2:
+                    self.buffers[k][i * partition: i * partition + partition, :, :] = v
+                else:
+                    self.buffers[k][i * partition: i * partition + partition, :] = v
 
     def load(self, load_fn, path):
         tonic.logger.log('Loading buffer')
@@ -108,10 +138,14 @@ class Buffer:
         try:
             if hasattr(self, 'buffers'):
                 for field in self.checkpoint_fields:
-                    buffer_path = self.get_path(path, field)
-                    setattr(self, field, load_fn(buffer_path))
+                    if not field == 'buffers':
+                        buffer_path = self.get_path(path, field)
+                        setattr(self, field, load_fn(buffer_path))
+                    else:
+                        self.load_buffer_incrementally(path, load_fn)
         except:
             print('Error in buffer loading, it is freshly initialized')
+
 
     def get_path(self, path, post_fix):
         return path.split('step')[0] + post_fix + '.pt'
