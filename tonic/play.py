@@ -1,6 +1,5 @@
 '''Script used to play with trained agents.'''
 
-from pudb import set_trace
 import argparse
 import os
 
