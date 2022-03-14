@@ -110,6 +110,12 @@ class ControlSuiteEnvironment(gym.core.Env):
         self.action_space = gym.spaces.Box(
             action_spec.minimum, action_spec.maximum, dtype=np.float32)
 
+        self._reload_info = {'domain_name': domain_name,
+                            'task_name': task_name,
+                            'task_kwargs': task_kwargs,
+                            'visualize_reward': visualize_reward,
+                            'environment_kwargs': environment_kwargs}
+
     def seed(self, seed):
         self.environment.task._random = np.random.RandomState(seed)
 
@@ -152,8 +158,11 @@ class ControlSuiteEnvironment(gym.core.Env):
         time_step = self.environment.reset()
         muscles_dep = self.environment.physics.tendon_states()
         if np.any(np.isnan(_flatten_observation(time_step.observation))) or np.any(np.isnan(muscles_dep)):
-            self.reset()
-            print('Resetting because of NaNs on reset')
+            print('Reloading env because of NaNs on reset')
+            from dm_control import suite
+            self.environment = suite.load(**self._reload_info)
+            time_step = self.environment.reset()
+            muscles_dep = self.environment.physics.tendon_states()
         self.last_time_step = time_step
         self.muscles_dep = muscles_dep
         return _flatten_observation(time_step.observation)

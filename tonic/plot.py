@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 from tonic import logger
-plt.style.use(['seaborn'])
+# plt.style.use(['seaborn'])
 
 
 def smooth(vals, window):
