@@ -158,11 +158,11 @@ class ControlSuiteEnvironment(gym.core.Env):
         time_step = self.environment.reset()
         muscles_dep = self.environment.physics.tendon_states()
         if np.any(np.isnan(_flatten_observation(time_step.observation))) or np.any(np.isnan(muscles_dep)):
-            print('Reloading env because of NaNs on reset')
             from dm_control import suite
             self.environment = suite.load(**self._reload_info)
             time_step = self.environment.reset()
             muscles_dep = self.environment.physics.tendon_states()
+            logger.log('Reloading env because of NaNs on reset')
         self.last_time_step = time_step
         self.muscles_dep = muscles_dep
         return _flatten_observation(time_step.observation)

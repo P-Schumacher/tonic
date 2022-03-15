@@ -93,9 +93,9 @@ def get_data(
             df_seed = pd.read_csv(path, sep=',', engine='python')
             x = df_seed[x_axis].values
             # The x axis should be sorted.
-            if not np.all(np.diff(x) > 0):
-                logger.warning(f'Skipping unsorted {env} {agent} {seed}')
-                continue
+            # if not np.all(np.diff(x) > 0):
+            #     logger.warning(f'Skipping unsorted {env} {agent} {seed}')
+            #     continue
             if x_min and x[-1] < x_min:
                 logger.warning(
                     f'Skipping {env} {agent} {seed} ({x[-1]} steps)')
