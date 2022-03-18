@@ -119,6 +119,12 @@ class ControlSuiteEnvironment(gym.core.Env):
     def seed(self, seed):
         self.environment.task._random = np.random.RandomState(seed)
 
+    def merge_args(self, env_args):
+        self.environment.physics.merge_args(env_args)
+
+    def apply_args(self, *args, **kwargs):
+        pass
+
     def step(self, action):
         try:
             time_step = self.environment.step(action)
