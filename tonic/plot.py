@@ -324,6 +324,7 @@ def plot(
             for agent in sorted(data[env], key=str.casefold):
                 color = agent_colors[agent]
                 x, mean, min_mean, max_mean, std = data[env][agent]['stats']
+                print(f'{np.max(max_mean)=} {agent=} {env=}')
                 if interval == 'std':
                     if std is None:
                         logger.error('No std found in the data.')
