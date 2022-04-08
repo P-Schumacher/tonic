@@ -115,6 +115,9 @@ class Parallel:
                 out = envs.step(actions)
                 self.output_queue.put((index, out))
         dummy_environment = self.environment_builder()
+        dummy_environment.merge_args(self.env_args)
+        dummy_environment.apply_args()
+
         self.observation_space = dummy_environment.observation_space
         self.action_space = dummy_environment.action_space
         del dummy_environment

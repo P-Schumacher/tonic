@@ -47,6 +47,8 @@ def stats(xs, means, stds):
     mean = means.mean(axis=0)
     min_mean = means.min(axis=0)
     max_mean = means.max(axis=0)
+    print(f'{np.max(max_mean)=}')
+    print(f'at {int(x[np.argmax(max_mean)])}')
     if stds is not None:
         stds = np.array([std[:min_length] for std in stds])
         variances = stds ** 2
