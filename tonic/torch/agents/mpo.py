@@ -14,7 +14,8 @@ def default_model():
             encoder=models.ObservationActionEncoder(),
             torso=models.MLP((256, 256), torch.nn.ReLU),
             head=models.ValueHead()),
-        observation_normalizer=normalizers.MeanStd())
+        observation_normalizer=normalizers.MeanStd(),
+        return_normalizer=normalizers.returns.Return(0.99))
 
 
 class MPO(agents.Agent):

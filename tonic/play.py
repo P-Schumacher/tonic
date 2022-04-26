@@ -37,13 +37,14 @@ def play_gym(agent, environment):
     global_max_reward = -float('inf')
     steps = 0
     episodes = 0
-
+    maxes = np.zeros_like(environment.action_space.shape)
     while True:
         actions = agent.test_step(observations, steps, muscles_dep)
         observations, muscles_dep, infos = environment.step(actions)
         agent.test_update(**infos, steps=steps)
         environment.render()
-
+        maxes = np.maximum(maxes, environment.environments[0].unwrapped.data.qfrc_actuator)
+        print(maxes)
         steps += 1
         reward = infos['rewards'][0]
         score += reward
