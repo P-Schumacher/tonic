@@ -23,6 +23,7 @@ class Agent(agents.Agent):
         self.save_optimizer(path)
         self.save_buffer(path)
         self.save_observation_normalizer(path)
+        self.save_return_normalizer(path)
 
     def load(self, path, play=False):
         path = path + '.pt'
@@ -37,24 +38,20 @@ class Agent(agents.Agent):
                 self.load_optimizer(load_fn, path)
                 self.load_buffer(load_fn, path)
                 self.load_observation_normalizer(load_fn, path)
+                self.load_return_normalizer(load_fn, path)
             except:
                 print('Failure in loading model supplements, only loading policy now')
 
     def save_return_normalizer(self, path):
-        # if hasattr(self.model, 'return_normalizer'):
-        #     reno = self.model.return_normalizer
-        #     norm_path = self.get_path(path, 'ret_norm')
-        #     ret_norm_dict = {'clip': reno.clip,
-        #                      'count': reno.count,
-        #                      'mean' : reno.mean,
-        #                      'mean_sq': reno.mean_sq,
-        #                      'new_count': reno.new_count,
-        #                      'new_sum': reno.new_sum,
-        #                      'new_sum_sq': reno.new_sum_sq,
-        #                      'std': reno.std,
-        #                      '_mean': reno._mean,
-        #                      '_std': reno._std}
-        #     torch.save(ret_norm_dict, norm_path)
+        if hasattr(self.model, 'return_normalizer'):
+            reno = self.model.return_normalizer
+            norm_path = self.get_path(path, 'ret_norm')
+            ret_norm_dict = {'min_rew': reno.min_reward,
+                             'max_rew': reno.max_reward,
+                             'low' : reno._low,
+                             'high': reno._high,
+                             'coefficient': reno.coefficient}
+            torch.save(ret_norm_dict, norm_path)
         raise NotImplementedError()
 
     def save_observation_normalizer(self, path):
@@ -76,6 +73,13 @@ class Agent(agents.Agent):
             load_dict = load_fn(norm_path)
             for k, v in load_dict.items():
                 setattr(self.model.observation_normalizer, k, v)
+
+    def load_return_normalizer(self, load_fn, path):
+        if hasattr(self.model, 'return_normalizer'):
+            norm_path = self.get_path(path, 'ret_norm')
+            load_dict = load_fn(norm_path)
+            for k, v in load_dict.items():
+                setattr(self.model.return_normalizer, k, v)
 
     def save_optimizer(self, path):
         if hasattr(self, 'actor_updater'):
