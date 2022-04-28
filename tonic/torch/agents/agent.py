@@ -52,7 +52,6 @@ class Agent(agents.Agent):
                              'high': reno._high,
                              'coefficient': reno.coefficient}
             torch.save(ret_norm_dict, norm_path)
-        raise NotImplementedError()
 
     def save_observation_normalizer(self, path):
         if hasattr(self.model, 'observation_normalizer'):
