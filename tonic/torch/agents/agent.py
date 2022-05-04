@@ -48,8 +48,8 @@ class Agent(agents.Agent):
             norm_path = self.get_path(path, 'ret_norm')
             ret_norm_dict = {'min_rew': reno.min_reward,
                              'max_rew': reno.max_reward,
-                             'low' : reno._low,
-                             'high': reno._high,
+                             '_low' : reno._low,
+                             '_high': reno._high,
                              'coefficient': reno.coefficient}
             torch.save(ret_norm_dict, norm_path)
 
