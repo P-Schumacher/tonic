@@ -52,3 +52,29 @@ class TimeFeature(gym.Wrapper):
         v = self.low + (self.high - self.low) * prop
         observation = np.append(observation, v)
         return observation, reward, done, info
+
+class ExceptionWrapper(gym.Wrapper):
+    def reset(self, **kwargs):
+        observation = self.env.reset(**kwargs)
+        if not np.any(np.isnan(observation)):
+            self.last_observation = observation.copy()
+        else:
+            return self.reset(**kwargs)
+        return observation
+
+    def step(self, action):
+        try:
+            observation, reward, done, info = self.env.step(action)
+            if np.any(np.isnan(observation)):
+                raise Exception('NaN detected, resetting')
+        except Exception as e:
+            observation = self.last_observation
+            self.last_observation = observation.copy()
+            reward = - 1000
+            done = 1
+        return observation, reward, done, info
+
+
+
+
+
