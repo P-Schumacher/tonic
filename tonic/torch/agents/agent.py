@@ -43,7 +43,7 @@ class Agent(agents.Agent):
                 print('Failure in loading model supplements, only loading policy now')
 
     def save_return_normalizer(self, path):
-        if hasattr(self.model, 'return_normalizer'):
+        if hasattr(self.model, 'return_normalizer') and self.model.return_normalizer is not None:
             reno = self.model.return_normalizer
             norm_path = self.get_path(path, 'ret_norm')
             ret_norm_dict = {'min_rew': reno.min_reward,
@@ -54,7 +54,7 @@ class Agent(agents.Agent):
             torch.save(ret_norm_dict, norm_path)
 
     def save_observation_normalizer(self, path):
-        if hasattr(self.model, 'observation_normalizer'):
+        if hasattr(self.model, 'observation_normalizer') and self.model.observation_normalizer is not None:
             ono = self.model.observation_normalizer
             norm_path = self.get_path(path, 'obs_norm')
             obs_norm_dict = {'clip': ono.clip,
@@ -68,17 +68,23 @@ class Agent(agents.Agent):
 
     def load_observation_normalizer(self, load_fn, path):
         if hasattr(self.model, 'observation_normalizer'):
-            norm_path = self.get_path(path, 'obs_norm')
-            load_dict = load_fn(norm_path)
-            for k, v in load_dict.items():
-                setattr(self.model.observation_normalizer, k, v)
+            try:
+                norm_path = self.get_path(path, 'obs_norm')
+                load_dict = load_fn(norm_path)
+                for k, v in load_dict.items():
+                    setattr(self.model.observation_normalizer, k, v)
+            except:
+                print('Not loading observation normalizer')
 
     def load_return_normalizer(self, load_fn, path):
         if hasattr(self.model, 'return_normalizer'):
-            norm_path = self.get_path(path, 'ret_norm')
-            load_dict = load_fn(norm_path)
-            for k, v in load_dict.items():
-                setattr(self.model.return_normalizer, k, v)
+            try:
+                norm_path = self.get_path(path, 'ret_norm')
+                load_dict = load_fn(norm_path)
+                for k, v in load_dict.items():
+                    setattr(self.model.return_normalizer, k, v)
+            except:
+                print('Not loading return normalizer')
 
     def save_optimizer(self, path):
         if hasattr(self, 'actor_updater'):
