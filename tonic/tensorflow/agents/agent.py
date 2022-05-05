@@ -1,8 +1,8 @@
 import random
-
+import torch
 import numpy as np
 import tensorflow as tf
-
+import os
 from tonic import agents, logger
 physical_devices = tf.config.list_physical_devices('GPU')
 import torch
@@ -23,37 +23,43 @@ class Agent(agents.Agent):
 
     def save(self, path):
         logger.log(f'\nSaving weights to {path}')
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+
+        logger.log(f'\nSaving weights to {path}')
         self.model.save_weights(path)
         path = path + '.pt'
+        self.save_return_normalizer(path)
         self.save_observation_normalizer(path)
+        self.save_buffer(path)
         self.save_optimizer(path)
 
     def load(self, path, play=None):
         logger.log(f'\nLoading weights from {path}')
-        from pudb import set_trace
-        set_trace()
+        self.load_optimizer(path)
         self.model.load_weights(path)
-        #self.load_observation_normalizer(path)
-
+        # self.load_buffer(path)
+        self.load_observation_normalizer(path)
+        self.load_return_normalizer(path)
+        self.load_buffer(torch.load, path)
 
     def save_return_normalizer(self, path):
-        if hasattr(self.model, 'return_normalizer'):
+        if self.model.return_normalizer is not None:
             reno = self.model.return_normalizer
             norm_path = self.get_path(path, 'ret_norm')
             ret_norm_dict = {'min_rew': reno.min_reward,
                              'max_rew': reno.max_reward,
-                             'low' : reno._low,
-                             'high': reno._high,
+                             '_low' : reno._low,
+                             '_high': reno._high,
                              'coefficient': reno.coefficient}
             torch.save(ret_norm_dict, norm_path)
 
     def save_observation_normalizer(self, path):
-        if hasattr(self.model, 'observation_normalizer'):
+        if self.model.observation_normalizer is not None:
             ono = self.model.observation_normalizer
             norm_path = self.get_path(path, 'obs_norm')
             obs_norm_dict = {'clip': ono.clip,
                              'count': ono.count,
-                             'mean' : ono.mean,
+                             'mean': ono.mean,
                              'mean_sq': ono.mean_sq,
                              'std': ono.std,
                              '_mean': ono._mean,
@@ -61,34 +67,47 @@ class Agent(agents.Agent):
             torch.save(obs_norm_dict, norm_path)
 
     def load_observation_normalizer(self, path):
-        if hasattr(self.model, 'observation_normalizer'):
+        if self.model.observation_normalizer is not None:
             norm_path = self.get_path(path, 'obs_norm')
             load_dict = torch.load(norm_path)
             for k, v in load_dict.items():
                 setattr(self.model.observation_normalizer, k, v)
 
     def load_return_normalizer(self, path):
-        if hasattr(self.model, 'return_normalizer'):
+        if self.model.return_normalizer is not None:
             norm_path = self.get_path(path, 'ret_norm')
             load_dict = torch.load(norm_path)
             for k, v in load_dict.items():
-                setattr(self.model.return_normalizer, k, v)
+                setattr(self.model.observation_normalizer, k, v)
+
+    def save_buffer(self, path):
+        self.replay.save(path)
+
+    def load_buffer(self, load_fn, path):
+        self.replay.load(load_fn, path)
 
     def save_optimizer(self, path):
-        if hasattr(self, 'actor_updater'):
-            if hasattr(self.actor_updater, 'optimizer'):
-                opt_path = self.get_path(path, 'actor')
-                from pudb import set_trace
-                set_trace()
-                torch.save(self.actor_updater.optimizer.state_dict(), opt_path)
-            else:
-                # so far, only MPO has different optimizers
-                opt_path = self.get_path(path, 'actor')
-                torch.save(self.actor_updater.actor_optimizer.state_dict(), opt_path)
-                opt_path = self.get_path(path, 'dual')
-                torch.save(self.actor_updater.dual_optimizer.state_dict(), opt_path)
-        if hasattr(self, 'critic_updater'):
-            pass
+        for updater in ['actor_updater', 'critic_updater']:
+            if hasattr(self, updater):
+                if hasattr(getattr(self, updater), 'optimizer'):
+                    opt = getattr(self, updater).optimizer
+                    opt_path = self.get_path(path, updater)
+                    torch.save(opt.get_weights(), opt_path)
+
+    def load_optimizer(self, path):
+        for updater in ['actor_updater', 'critic_updater']:
+            if hasattr(self, updater):
+                if hasattr(getattr(self, updater), 'optimizer'):
+                    opt = getattr(self, updater).optimizer
+                    opt_path = self.get_path(path, updater)
+                    load_dict = torch.load(opt_path)
+                    if 'actor' in updater:
+                        grad_vars = self.actor_updater.model.actor.trainable_variables
+                    else:
+                        grad_vars = self.critic_updater.model.critic_1.trainable_variables + self.critic_updater.model.critic_2.trainable_variables
+                    zero_grads = [tf.zeros_like(w) for w in grad_vars]
+                    opt.apply_gradients(zip(zero_grads, grad_vars))
+                    opt.set_weights(load_dict)
 
     def get_path(self, path, post_fix):
         return path.split('step')[0] + post_fix + '.pt'

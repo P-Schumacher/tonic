@@ -43,7 +43,7 @@ class Agent(agents.Agent):
                 print('Failure in loading model supplements, only loading policy now')
 
     def save_return_normalizer(self, path):
-        if hasattr(self.model, 'return_normalizer') and self.model.return_normalizer is not None:
+        if self.model.return_normalizer is not None:
             reno = self.model.return_normalizer
             norm_path = self.get_path(path, 'ret_norm')
             ret_norm_dict = {'min_rew': reno.min_reward,
