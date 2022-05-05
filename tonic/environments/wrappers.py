@@ -63,6 +63,8 @@ class ExceptionWrapper(gym.Wrapper):
         return observation
 
     def step(self, action):
+        if np.isnan(np.sum(action)):
+            raise Exception('NaN found in incoming action in environment!')
         try:
             observation, reward, done, info = self.env.step(action)
             if np.any(np.isnan(observation)):
@@ -72,6 +74,8 @@ class ExceptionWrapper(gym.Wrapper):
             self.last_observation = observation.copy()
             reward = - 1000
             done = 1
+        if np.isnan(np.sum(observation)):
+            raise Exception('NaN found in outgoing state in environment!')
         return observation, reward, done, info
 
 
