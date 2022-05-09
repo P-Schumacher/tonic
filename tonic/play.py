@@ -243,7 +243,6 @@ def play(path, checkpoint, seed, header, agent, environment):
         environment_type = environment.env.__class__.__name__
     else:
         environment_type = environment.__class__.__name__
-
     if environment_type == 'ControlSuiteEnvironment':
         play_control_suite(agent, environment)
     else:

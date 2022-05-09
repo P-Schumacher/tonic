@@ -63,6 +63,8 @@ def build_environment(
         if type(environment) == gym.wrappers.TimeLimit:
             environment = environment.env
 
+    if issubclass(type(environment), gym.Wrapper):
+        environment = environments.wrappers.ExceptionWrapper(environment)
     # Add time as a feature if needed.
     if time_feature:
         environment = environments.wrappers.TimeFeature(
@@ -71,8 +73,6 @@ def build_environment(
     # Scale actions from [-1, 1]^n to the true action space if needed.
     if scaled_actions:
         environment = environments.wrappers.ActionRescaler(environment)
-    if issubclass(type(environment), gym.Wrapper):
-        environment = environments.wrappers.ExceptionWrapper(environment)
     environment.name = name
     environment.max_episode_steps = max_episode_steps
 
