@@ -46,8 +46,8 @@ class Agent(agents.Agent):
         if self.model.return_normalizer is not None:
             reno = self.model.return_normalizer
             norm_path = self.get_path(path, 'ret_norm')
-            ret_norm_dict = {'min_rew': reno.min_reward,
-                             'max_rew': reno.max_reward,
+            ret_norm_dict = {'min_reward': reno.min_reward,
+                             'max_reward': reno.max_reward,
                              '_low' : reno._low,
                              '_high': reno._high,
                              'coefficient': reno.coefficient}
@@ -63,7 +63,10 @@ class Agent(agents.Agent):
                              'mean_sq': ono.mean_sq,
                              'std': ono.std,
                              '_mean': ono._mean,
-                             '_std': ono._std}
+                             '_std': ono._std,
+                             'new_sum': ono.new_sum,
+                             'new_sum_sq': ono.new_sum_sq,
+                             'new_count': ono.new_count}
             torch.save(obs_norm_dict, norm_path)
 
     def load_observation_normalizer(self, load_fn, path):
