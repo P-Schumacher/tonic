@@ -33,14 +33,6 @@ class Agent(agents.Agent):
         self.save_buffer(path)
         self.save_optimizer(path)
 
-    def load(self, path, play=None):
-        logger.log(f'\nLoading weights from {path}')
-        self.load_optimizer(path)
-        self.model.load_weights(path)
-        # self.load_buffer(path)
-        self.load_observation_normalizer(path)
-        self.load_return_normalizer(path)
-        self.load_buffer(torch.load, path)
 
     def save_return_normalizer(self, path):
         if self.model.return_normalizer is not None:
@@ -65,20 +57,6 @@ class Agent(agents.Agent):
                              '_mean': ono._mean,
                              '_std': ono._std}
             torch.save(obs_norm_dict, norm_path)
-
-    def load_observation_normalizer(self, path):
-        if self.model.observation_normalizer is not None:
-            norm_path = self.get_path(path, 'obs_norm')
-            load_dict = torch.load(norm_path)
-            for k, v in load_dict.items():
-                setattr(self.model.observation_normalizer, k, v)
-
-    def load_return_normalizer(self, path):
-        if self.model.return_normalizer is not None:
-            norm_path = self.get_path(path, 'ret_norm')
-            load_dict = torch.load(norm_path)
-            for k, v in load_dict.items():
-                setattr(self.model.observation_normalizer, k, v)
 
     def save_buffer(self, path):
         self.replay.save(path)
@@ -109,5 +87,38 @@ class Agent(agents.Agent):
                     opt.apply_gradients(zip(zero_grads, grad_vars))
                     opt.set_weights(load_dict)
 
+    def load_model(self, path):
+        self.model.load_weights(path)
+
+    def load_observation_normalizer(self, path):
+        if self.model.observation_normalizer is not None:
+            norm_path = self.get_path(path, 'obs_norm')
+            load_dict = torch.load(norm_path)
+            for k, v in load_dict.items():
+                setattr(self.model.observation_normalizer, k, v)
+
+    def load_return_normalizer(self, path):
+        if self.model.return_normalizer is not None:
+            norm_path = self.get_path(path, 'ret_norm')
+            load_dict = torch.load(norm_path)
+            for k, v in load_dict.items():
+                setattr(self.model.observation_normalizer, k, v)
+
+
     def get_path(self, path, post_fix):
         return path.split('step')[0] + post_fix + '.pt'
+
+    def load(self, path, play=None):
+        loading = {'optimizer': self.load_optimizer,
+                   'model': self.load_model,
+                   'obs_normalization': self.load_observation_normalizer,
+                   'return_normalization': self.load_return_normalizer,
+                   'buffer': lambda x: self.load_buffer(torch.load, x)}
+        if not play:
+            for k, load_fn in loading.items():
+                try:
+                    load_fn(path)
+                except:
+                    logger.log(f'Loading of {k} failed, skipping')
+        else:
+            self.load_model(path)
