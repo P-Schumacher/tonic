@@ -17,7 +17,7 @@ import time
 
 def func(env, preid=5, parallel=1, sequential=1):
     print(env)
-    if 'ostrich' in env:
+    if not 'gym' in env:
         return lambda: eval(env)
 
     def build_env(identifier=0):
