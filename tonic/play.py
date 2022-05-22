@@ -43,7 +43,7 @@ def play_gym(agent, environment):
         observations, muscles_dep, infos = environment.step(actions)
         agent.test_update(**infos, steps=steps)
         environment.render()
-        maxes = np.maximum(maxes, environment.environments[0].unwrapped.data.qfrc_actuator)
+        #maxes = np.maximum(maxes, environment.environments[0].unwrapped.data.qfrc_actuator)
         print(maxes)
         steps += 1
         reward = infos['rewards'][0]
@@ -53,7 +53,7 @@ def play_gym(agent, environment):
         global_min_reward = min(global_min_reward, reward)
         global_max_reward = max(global_max_reward, reward)
         length += 1
-
+        print(infos['terminations'])
         if infos['resets'][0]:
             term = infos['terminations'][0]
             episodes += 1
@@ -109,7 +109,7 @@ def play_control_suite(agent, environment):
 
         def step(self, actions):
             '''Mimics a dm_control step for the viewer.'''
-
+            print(actions)
             assert not np.isnan(actions.sum())
             ob, rew, term, _ = self.environment.step(actions[0])
 

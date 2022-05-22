@@ -2,7 +2,7 @@
 
 import gym
 import numpy as np
-
+import tonic
 
 class ActionRescaler(gym.ActionWrapper):
     '''Rescales actions from [-1, 1]^n to the true action space.
@@ -68,13 +68,10 @@ class ExceptionWrapper(gym.Wrapper):
             if np.any(np.isnan(observation)):
                 raise Exception('NaN detected, resetting')
         except Exception as e:
+            tonic.logger.log(e)
             observation = self.last_observation
             self.last_observation = observation.copy()
             reward = - 1000
             done = 1
         return observation, reward, done, info
-
-
-
-
 

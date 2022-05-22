@@ -346,13 +346,13 @@ class MaximumAPosterioriPolicyOptimization:
 
         with torch.no_grad():
             self.log_temperature.data.copy_(
-                torch.maximum(self.min_log_dual, self.log_temperature))
+                torch.max(self.min_log_dual, self.log_temperature))
             self.log_alpha_mean.data.copy_(
-                torch.maximum(self.min_log_dual, self.log_alpha_mean))
+                torch.max(self.min_log_dual, self.log_alpha_mean))
             self.log_alpha_std.data.copy_(
-                torch.maximum(self.min_log_dual, self.log_alpha_std))
+                torch.max(self.min_log_dual, self.log_alpha_std))
             if self.action_penalization:
-                self.log_penalty_temperature.data.copy_(torch.maximum(
+                self.log_penalty_temperature.data.copy_(torch.max(
                     self.min_log_dual, self.log_penalty_temperature))
 
             target_distributions = self.model.target_actor(observations)

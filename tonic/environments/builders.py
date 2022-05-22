@@ -57,7 +57,6 @@ def build_environment(
             max_episode_steps = environment._max_episode_steps
         else:
             max_episode_steps = environment.env.unwrapped._max_episode_steps
-
     # Remove the TimeLimit wrapper if needed.
     if not terminal_timeouts:
         if type(environment) == gym.wrappers.TimeLimit:
