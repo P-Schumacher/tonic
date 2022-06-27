@@ -21,13 +21,13 @@ def func(env):
     return build_env
 
 
-def play_gym(agent, environment):
+def play_gym(agent, environment, env_args=None):
     '''Launches an agent in a Gym-based environment.'''
-    environment = tonic.environments.distribute(lambda identifier=0: environment)
+    environment = tonic.environments.distribute(lambda identifier=0: environment, env_args=env_args)
 
     observations, muscles_dep = environment.start()
-    environment.render()
-    environment.render_substep()
+    #environment.render()
+    #environment.render_substep()
 
     score = 0
     length = 0
@@ -40,10 +40,12 @@ def play_gym(agent, environment):
     maxes = np.zeros_like(environment.action_space.shape)
     while True:
         actions = agent.test_step(observations, steps, muscles_dep)
+        #print(actions)
         observations, muscles_dep, infos = environment.step(actions)
         agent.test_update(**infos, steps=steps)
         environment.render()
-        #maxes = np.maximum(maxes, environment.environments[0].unwrapped.data.qfrc_actuator)
+        if hasattr(environment.environments[0].unwrapped, 'data'):
+            maxes = np.maximum(maxes, environment.environments[0].unwrapped.data.qfrc_actuator)
         print(maxes)
         steps += 1
         reward = infos['rewards'][0]
@@ -53,7 +55,7 @@ def play_gym(agent, environment):
         global_min_reward = min(global_min_reward, reward)
         global_max_reward = max(global_max_reward, reward)
         length += 1
-        print(infos['terminations'])
+        #print(infos['terminations'])
         if infos['resets'][0]:
             term = infos['terminations'][0]
             episodes += 1
@@ -109,7 +111,7 @@ def play_control_suite(agent, environment):
 
         def step(self, actions):
             '''Mimics a dm_control step for the viewer.'''
-            print(actions)
+            #print(actions)
             assert not np.isnan(actions.sum())
             ob, rew, term, _ = self.environment.step(actions[0])
 
@@ -249,7 +251,11 @@ def play(path, checkpoint, seed, header, agent, environment):
     else:
         if 'Bullet' in environment_type:
             environment.render()
-        play_gym(agent, environment)
+        if 'config' in locals() and hasattr(config, 'env_args'):
+            play_gym(agent, environment, config.env_args)
+        else:
+            play_gym(agent, environment)
+
 
 
 if __name__ == '__main__':
