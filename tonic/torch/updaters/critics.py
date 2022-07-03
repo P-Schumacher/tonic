@@ -242,7 +242,7 @@ class ExpectedSARSA:
         self.num_samples = num_samples
         self.loss = loss or torch.nn.MSELoss()
         self.optimizer = optimizer or (
-            lambda params: torch.optim.Adam(params, lr=3e-4))
+            lambda params: torch.optim.Adam(params, lr=3e-4, capturable=True))
         self.gradient_clip = gradient_clip
 
     def initialize(self, model):
