@@ -4,6 +4,7 @@ import os
 import numpy as np
 from catatonic.utils import env_tonic_compat
 
+
 class Sequential:
     '''A group of environments used in sequence.'''
 
@@ -131,8 +132,10 @@ class Parallel:
             pipe, worker_end = multiprocessing.Pipe()
             self.action_pipes.append(pipe)
             group_seed = seed * (self.worker_groups * self.workers_per_group) + i * self.workers_per_group
+            #process = multiprocessing.Process(
+            #    target=external_proc, args=(self.output_queue, worker_end, i, group_seed, self.build_dict, self.max_episode_steps, self.workers_per_group, self.env_args))
             process = multiprocessing.Process(
-                target=external_proc, args=(self.output_queue, worker_end, i, group_seed, self.build_dict, self.max_episode_steps, self.workers_per_group, self.env_args))
+                target=proc, args=(worker_end, i, group_seed))
             process.daemon = True
             process.start()
 
@@ -210,7 +213,7 @@ def build_env_from_dict(build_dict):
 
 def external_proc(output_queue, action_pipe, index, seed, build_dict, max_episode_steps, workers_per_group, env_args):
     '''Process holding a sequential group of environments.'''
-    import sconegym
+    #import sconegym
     envs = Sequential(
         build_dict, max_episode_steps,
         workers_per_group, index, env_args)

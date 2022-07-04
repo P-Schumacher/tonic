@@ -287,9 +287,9 @@ class MaximumAPosterioriPolicyOptimization:
         self.epsilon_penalty = epsilon_penalty
         self.per_dim_constraining = per_dim_constraining
         self.actor_optimizer = actor_optimizer or (
-            lambda params: torch.optim.Adam(params, lr=3e-4, capturable=True))
+            lambda params: torch.optim.Adam(params, lr=3e-4))
         self.dual_optimizer = actor_optimizer or (
-            lambda params: torch.optim.Adam(params, lr=1e-2, capturable=True))
+            lambda params: torch.optim.Adam(params, lr=1e-2))
         self.gradient_clip = gradient_clip
 
     def initialize(self, model, action_space):
