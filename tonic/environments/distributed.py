@@ -2,7 +2,6 @@
 import multiprocessing
 import os
 import numpy as np
-from catatonic.utils import env_tonic_compat
 
 
 class Sequential:
@@ -206,6 +205,7 @@ def distribute(build_dict, worker_groups=1, workers_per_group=1, env_args=None):
 
 def build_env_from_dict(build_dict):
     if type(build_dict) == dict:
+        from catatonic.utils import env_tonic_compat
         return env_tonic_compat(**build_dict)
     else:
         return build_dict
