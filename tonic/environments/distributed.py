@@ -17,7 +17,7 @@ class Sequential:
         if env_args is not None:
             [x.merge_args(env_args) for x in self.environments]
             [x.apply_args() for x in self.environments]
-        self.max_episode_steps = max_episode_steps
+        self._max_episode_steps = max_episode_steps
         self.observation_space = self.environments[0].observation_space
         self.action_space = self.environments[0].action_space
         self.name = self.environments[0].name
@@ -47,7 +47,7 @@ class Sequential:
             muscle = self.environments[i].muscles_dep
             self.lengths[i] += 1
             # Timeouts trigger resets but are not true terminations.
-            reset = term or self.lengths[i] == self.max_episode_steps
+            reset = term or self.lengths[i] == self._max_episode_steps
             next_observations.append(ob)
             rewards.append(rew)
             resets.append(reset)
@@ -93,7 +93,7 @@ class Parallel:
         self.build_dict = build_dict
         self.worker_groups = worker_groups
         self.workers_per_group = workers_per_group
-        self.max_episode_steps = max_episode_steps
+        self._max_episode_steps = max_episode_steps
         self.env_args = env_args
 
     def get_index(self):
@@ -104,7 +104,7 @@ class Parallel:
         def proc(action_pipe, index, seed):
             '''Process holding a sequential group of environments.'''
             envs = Sequential(
-                self.build_dict, self.max_episode_steps,
+                self.build_dict, self._max_episode_steps,
                 self.workers_per_group, index, self.env_args)
             envs.initialize(seed)
 
@@ -190,7 +190,7 @@ def distribute(build_dict, worker_groups=1, workers_per_group=1, env_args=None):
     '''Distributes workers over parallel and sequential groups.'''
 
     dummy_environment = build_env_from_dict(build_dict)()
-    max_episode_steps = dummy_environment.max_episode_steps
+    max_episode_steps = dummy_environment._max_episode_steps
     del dummy_environment
 
     if worker_groups < 2:

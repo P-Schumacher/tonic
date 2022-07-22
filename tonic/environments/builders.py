@@ -74,7 +74,7 @@ def build_environment(
     if scaled_actions:
         environment = environments.wrappers.ActionRescaler(environment)
     environment.name = name
-    environment.max_episode_steps = max_episode_steps
+    environment._max_episode_steps = max_episode_steps
 
     return environment
 
