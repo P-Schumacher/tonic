@@ -162,6 +162,7 @@ class Parallel:
             (self.worker_groups, self.workers_per_group), np.bool)
         self.terminations_list = np.zeros(
             (self.worker_groups, self.workers_per_group), np.bool)
+        self.env_infos_list = []
 
         return np.concatenate(self.observations_list), np.concatenate(self.muscles_dep_list)
 
@@ -178,6 +179,8 @@ class Parallel:
             self.resets_list[index] = infos['resets']
             self.terminations_list[index] = infos['terminations']
             self.muscles_dep_list[index] = tendon_state
+            if self.worker_groups == 1:
+                self.env_infos_list.append(infos['env_infos'])
 
         observations = np.concatenate(self.observations_list)
         muscles_dep = np.concatenate(self.muscles_dep_list)
@@ -185,7 +188,8 @@ class Parallel:
             observations=np.concatenate(self.next_observations_list),
             rewards=np.concatenate(self.rewards_list),
             resets=np.concatenate(self.resets_list),
-            terminations=np.concatenate(self.terminations_list))
+            terminations=np.concatenate(self.terminations_list),
+            env_infos=self.env_infos_list)
         return observations, muscles_dep, infos
 
 
