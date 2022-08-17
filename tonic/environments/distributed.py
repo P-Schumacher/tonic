@@ -41,9 +41,10 @@ class Sequential:
         terminations = []
         observations = []  # Observations for the actions selection.
         muscles_dep = []
+        env_infos = []
 
         for i in range(len(self.environments)):
-            ob, rew, term, _ = self.environments[i].step(actions[i])
+            ob, rew, term, env_info = self.environments[i].step(actions[i])
             muscle = self.environments[i].muscles_dep
             self.lengths[i] += 1
             # Timeouts trigger resets but are not true terminations.
@@ -52,6 +53,7 @@ class Sequential:
             rewards.append(rew)
             resets.append(reset)
             terminations.append(term)
+            env_infos.append(env_info)
 
             if reset:
                 ob = self.environments[i].reset()
@@ -67,7 +69,8 @@ class Sequential:
             observations=np.array(next_observations, np.float32),
             rewards=np.array(rewards, np.float32),
             resets=np.array(resets, np.bool),
-            terminations=np.array(terminations, np.bool))
+            terminations=np.array(terminations, np.bool),
+            env_infos=env_infos)
         return observations, muscles_dep, infos
 
     def render(self, mode='human', *args, **kwargs):
