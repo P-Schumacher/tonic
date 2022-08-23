@@ -59,6 +59,7 @@ class Sequential:
             terminations.append(term)
             env_infos.append(env_info)
             [obj_die[k].append(env_info['obs_dict'][k]) for k in obj_die.keys()]
+            obj_die['goal_pos'][-1] -= env_info['obs_dict']['goal_offset']
 
             if reset:
                 ob = self.environments[i].reset()
@@ -195,6 +196,7 @@ class Parallel:
             self.muscles_dep_list[index] = tendon_state
             for k in self.obj_die_list.keys():
                 self.obj_die_list[k][index] = infos['env_infos'][k]
+            self.obj_die_list['goal_pos'][-1] -= infos['env_infos']['goal_offset']
             if self.worker_groups == 1:
                 self.env_infos_list.append(infos['env_infos'])
 
