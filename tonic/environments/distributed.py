@@ -42,6 +42,10 @@ class Sequential:
         observations = []  # Observations for the actions selection.
         muscles_dep = []
         env_infos = []
+        obj_die = {'obj_pos': [],
+                   'obj_rot': [],
+                   'goal_pos': [],
+                   'goal_rot': []}
 
         for i in range(len(self.environments)):
             ob, rew, term, env_info = self.environments[i].step(actions[i])
@@ -54,6 +58,7 @@ class Sequential:
             resets.append(reset)
             terminations.append(term)
             env_infos.append(env_info)
+            [obj_die[k].append(env_info['obs_dict'][k]) for k in obj_die.keys()]
 
             if reset:
                 ob = self.environments[i].reset()
@@ -65,12 +70,14 @@ class Sequential:
 
         observations = np.array(observations, np.float32)
         muscles_dep=np.array(muscles_dep, np.float32)
+        for k in obj_die.keys():
+            obj_die[k] = np.array(obj_die[k], np.float32)
         infos = dict(
             observations=np.array(next_observations, np.float32),
             rewards=np.array(rewards, np.float32),
             resets=np.array(resets, np.bool),
             terminations=np.array(terminations, np.bool),
-            env_infos=env_infos)
+            env_infos=obj_die)
         return observations, muscles_dep, infos
 
     def render(self, mode='human', *args, **kwargs):
@@ -147,11 +154,15 @@ class Parallel:
         self.started = True
         observations_list = [None for _ in range(self.worker_groups)]
         muscles_dep_list = [None for _ in range(self.worker_groups)]
+        self.obj_die_list = {'obj_pos': [None for _ in range(self.worker_groups)],
+                   'obj_rot': [None for _ in range(self.worker_groups)],
+                   'goal_pos': [None for _ in range(self.worker_groups)],
+                   'goal_rot': [None for _ in range(self.worker_groups)]}
 
         for _ in range(self.worker_groups):
             index, (observations, muscles_dep)= self.output_queue.get()
             observations_list[index] = observations
-            muscles_dep_list[index] = muscles_dep  
+            muscles_dep_list[index] = muscles_dep
 
         self.observations_list = np.array(observations_list)
         self.muscles_dep_list = np.array(muscles_dep_list)
@@ -163,10 +174,13 @@ class Parallel:
         self.terminations_list = np.zeros(
             (self.worker_groups, self.workers_per_group), np.bool)
         self.env_infos_list = []
+        for k in self.obj_die_list.keys():
+            self.obj_die_list[k] = np.array(self.obj_die_list[k])
 
         return np.concatenate(self.observations_list), np.concatenate(self.muscles_dep_list)
 
     def step(self, actions):
+        obj_die_list = {}
         actions_list = np.split(actions, self.worker_groups)
         for actions, pipe in zip(actions_list, self.action_pipes):
             pipe.send(actions)
@@ -179,17 +193,26 @@ class Parallel:
             self.resets_list[index] = infos['resets']
             self.terminations_list[index] = infos['terminations']
             self.muscles_dep_list[index] = tendon_state
+            for k in self.obj_die_list.keys():
+                self.obj_die_list[k][index] = infos['env_infos'][k]
             if self.worker_groups == 1:
                 self.env_infos_list.append(infos['env_infos'])
 
         observations = np.concatenate(self.observations_list)
         muscles_dep = np.concatenate(self.muscles_dep_list)
+        obj_die_list['obj_pos'] = np.concatenate(self.obj_die_list['obj_pos'])
+        obj_die_list['obj_rot'] = np.concatenate(self.obj_die_list['obj_rot'])
+        obj_die_list['goal_pos'] = np.concatenate(self.obj_die_list['goal_pos'])
+        obj_die_list['goal_rot'] = np.concatenate(self.obj_die_list['obj_rot'])
+        #raise Exception(self.obj_die_list['obj_rot'].shape)
+        #for k in self.obj_die_list.items():
+        #    obj_die_list[k] = np.concatenate(self.obj_die_list[k])
         infos = dict(
             observations=np.concatenate(self.next_observations_list),
             rewards=np.concatenate(self.rewards_list),
             resets=np.concatenate(self.resets_list),
             terminations=np.concatenate(self.terminations_list),
-            env_infos=self.env_infos_list)
+            env_infos=obj_die_list)
         return observations, muscles_dep, infos
 
 

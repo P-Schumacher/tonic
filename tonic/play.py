@@ -24,6 +24,7 @@ def func(env):
 def play_gym(agent, environment):
     '''Launches an agent in a Gym-based environment.'''
     environment = tonic.environments.distribute(lambda identifier=0: environment)
+    #environment.environments[0].activate_ball(mass=3)
 
     observations, muscles_dep = environment.start()
     environment.render()
@@ -41,10 +42,11 @@ def play_gym(agent, environment):
     while True:
         actions = agent.test_step(observations, steps, muscles_dep)
         observations, muscles_dep, infos = environment.step(actions)
-        agent.test_update(**infos, steps=steps)
+        print(actions)
+        #agent.test_update(**infos, steps=steps)
         environment.render()
         maxes = np.maximum(maxes, environment.environments[0].unwrapped.data.qfrc_actuator)
-        print(maxes)
+        #print(maxes)
         steps += 1
         reward = infos['rewards'][0]
         score += reward
