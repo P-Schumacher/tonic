@@ -45,7 +45,8 @@ class Sequential:
         obj_die = {'obj_pos': [],
                    'obj_rot': [],
                    'goal_pos': [],
-                   'goal_rot': []}
+                   'goal_rot': [],
+                   'goal_offset': []}
 
         for i in range(len(self.environments)):
             ob, rew, term, env_info = self.environments[i].step(actions[i])
@@ -59,7 +60,7 @@ class Sequential:
             terminations.append(term)
             env_infos.append(env_info)
             [obj_die[k].append(env_info['obs_dict'][k]) for k in obj_die.keys()]
-            obj_die['goal_pos'][-1] -= env_info['obs_dict']['goal_offset']
+            #obj_die['goal_pos'][-1] -= env_info['obs_dict']['goal_offset']
 
             if reset:
                 ob = self.environments[i].reset()
@@ -158,7 +159,8 @@ class Parallel:
         self.obj_die_list = {'obj_pos': [None for _ in range(self.worker_groups)],
                    'obj_rot': [None for _ in range(self.worker_groups)],
                    'goal_pos': [None for _ in range(self.worker_groups)],
-                   'goal_rot': [None for _ in range(self.worker_groups)]}
+                   'goal_rot': [None for _ in range(self.worker_groups)],
+                   'goal_offset': [None for _ in range(self.worker_groups)]}
 
         for _ in range(self.worker_groups):
             index, (observations, muscles_dep)= self.output_queue.get()
@@ -196,7 +198,7 @@ class Parallel:
             self.muscles_dep_list[index] = tendon_state
             for k in self.obj_die_list.keys():
                 self.obj_die_list[k][index] = infos['env_infos'][k]
-            self.obj_die_list['goal_pos'][-1] -= infos['env_infos']['goal_offset']
+            #self.obj_die_list['goal_pos'][-1] -= infos['env_infos']['goal_offset']
             if self.worker_groups == 1:
                 self.env_infos_list.append(infos['env_infos'])
 
@@ -206,6 +208,7 @@ class Parallel:
         obj_die_list['obj_rot'] = np.concatenate(self.obj_die_list['obj_rot'])
         obj_die_list['goal_pos'] = np.concatenate(self.obj_die_list['goal_pos'])
         obj_die_list['goal_rot'] = np.concatenate(self.obj_die_list['obj_rot'])
+        obj_die_list['goal_offset'] = np.concatenate(self.obj_die_list['goal_offset'])
         #raise Exception(self.obj_die_list['obj_rot'].shape)
         #for k in self.obj_die_list.items():
         #    obj_die_list[k] = np.concatenate(self.obj_die_list[k])
