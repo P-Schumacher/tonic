@@ -32,7 +32,8 @@ class Sequential:
         observations = [env.reset() for env in self.environments]
         muscles_dep = [env.muscles_dep for env in self.environments]
         self.lengths = np.zeros(len(self.environments), int)
-        return np.array(observations, np.float32), np.array(muscles_dep, np.float32)
+        self.goal_offsets = [env.obs_dict['goal_offset'] for env in self.environments]
+        return np.array(observations, np.float32), np.array(muscles_dep, np.float32), np.array(self.goal_offsets, np.float32)
 
     def step(self, actions):
         next_observations = []  # Observations for the transitions.
@@ -163,9 +164,10 @@ class Parallel:
                    'goal_offset': [None for _ in range(self.worker_groups)]}
 
         for _ in range(self.worker_groups):
-            index, (observations, muscles_dep)= self.output_queue.get()
+            index, (observations, muscles_dep, goal_offset)= self.output_queue.get()
             observations_list[index] = observations
             muscles_dep_list[index] = muscles_dep
+            self.obj_die_list['goal_offset'][index] = goal_offset 
 
         self.observations_list = np.array(observations_list)
         self.muscles_dep_list = np.array(muscles_dep_list)
