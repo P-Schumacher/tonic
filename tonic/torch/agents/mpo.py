@@ -54,12 +54,12 @@ class MPO(agents.Agent):
         # Sample actions for testing.
         return self._test_step(observations).cpu().numpy()
 
-    def update(self, observations, rewards, resets, terminations, steps):
+    def update(self, observations, rewards, resets, terminations, steps, **kwargs):
         # Store the last transitions in the replay.
         self.replay.store(
             observations=self.last_observations, actions=self.last_actions,
             next_observations=observations, rewards=rewards, resets=resets,
-            terminations=terminations)
+            terminations=terminations, **kwargs)
 
         # Prepare to update the normalizers.
         if self.model.observation_normalizer:
