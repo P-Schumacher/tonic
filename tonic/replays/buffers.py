@@ -50,6 +50,8 @@ class Buffer:
                 shape = (self.max_size,) + np.array(val).shape
                 self.buffers[key] = np.full(shape, np.nan, np.float32)
 
+        if 'env_infos' in kwargs and 'env_infos' not in self.buffers.keys():
+            kwargs.pop('env_infos')
         # Store the new values.
         for key, val in kwargs.items():
             self.buffers[key][self.index] = val
