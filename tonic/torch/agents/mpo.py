@@ -71,6 +71,7 @@ class MPO(agents.Agent):
         if self.replay.ready(steps):
             self._update(steps)
 
+
     def _step(self, observations):
         observations = torch.as_tensor(observations, dtype=torch.float32)
         with torch.no_grad():

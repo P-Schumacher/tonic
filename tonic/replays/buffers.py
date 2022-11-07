@@ -148,8 +148,8 @@ class Buffer:
                         setattr(self, field, load_fn(buffer_path))
                     else:
                         self.load_buffer_incrementally(path, load_fn)
-        except:
-            print('Error in buffer loading, it is freshly initialized')
+        except Exception as e:
+            print(f'Error in buffer loading, it is freshly initialized: {e}')
 
     def get_path(self, path, post_fix):
         return path.split('step')[0] + post_fix + '.pt'

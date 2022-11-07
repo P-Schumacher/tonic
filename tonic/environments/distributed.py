@@ -53,7 +53,7 @@ class Sequential:
             rewards.append(rew)
             resets.append(reset)
             terminations.append(term)
-            env_infos.append(env_info['episode_number'])
+            # env_infos.append(env_info['episode_number'])
 
             if reset:
                 ob = self.environments[i].reset()
@@ -151,7 +151,7 @@ class Parallel:
         for _ in range(self.worker_groups):
             index, (observations, muscles_dep)= self.output_queue.get()
             observations_list[index] = observations
-            muscles_dep_list[index] = muscles_dep  
+            muscles_dep_list[index] = muscles_dep
 
         self.observations_list = np.array(observations_list)
         self.muscles_dep_list = np.array(muscles_dep_list)
@@ -183,7 +183,7 @@ class Parallel:
             self.terminations_list[index] = infos['terminations']
             self.muscles_dep_list[index] = tendon_state
             # self.env_infos_list.append(infos['env_infos'])
-            self.env_infos_list[index] = infos['env_infos']
+            # self.env_infos_list[index] = infos['env_infos']
             # if self.worker_groups == 1:
             #     self.env_infos_list.append(infos['env_infos'])
 

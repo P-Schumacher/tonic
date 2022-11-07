@@ -32,15 +32,18 @@ class Agent(agents.Agent):
             load_fn = partial(torch.load, map_location='cpu')
         else:
             load_fn = partial(torch.load, map_location='cuda')
-        self.model.load_state_dict(load_fn(path))
+        try:
+            self.model.load_state_dict(load_fn(path))
+        except Exception:
+            logger.log('Error, not loading model')
         if not play:
             try:
                 self.load_optimizer(load_fn, path)
                 self.load_buffer(load_fn, path)
                 self.load_observation_normalizer(load_fn, path)
                 self.load_return_normalizer(load_fn, path)
-            except:
-                print('Failure in loading model supplements, only loading policy now')
+            except Exception as e:
+                logger.log(f'Failure in loading model components: {e}')
 
     def save_return_normalizer(self, path):
         if self.model.return_normalizer is not None:
@@ -77,7 +80,7 @@ class Agent(agents.Agent):
                 for k, v in load_dict.items():
                     setattr(self.model.observation_normalizer, k, v)
             except:
-                print('Not loading observation normalizer')
+                logger.log('Not loading observation normalizer')
 
     def load_return_normalizer(self, load_fn, path):
         if hasattr(self.model, 'return_normalizer'):
@@ -87,7 +90,7 @@ class Agent(agents.Agent):
                 for k, v in load_dict.items():
                     setattr(self.model.return_normalizer, k, v)
             except:
-                print('Not loading return normalizer')
+                logger.log('Not loading return normalizer')
 
     def save_optimizer(self, path):
         if hasattr(self, 'actor_updater'):
