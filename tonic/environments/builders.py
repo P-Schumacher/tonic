@@ -110,6 +110,7 @@ class ControlSuiteEnvironment(gym.core.Env):
         action_spec = self.environment.action_spec()
         self.action_space = gym.spaces.Box(
             action_spec.minimum, action_spec.maximum, dtype=np.float32)
+        self.max_episode_steps = 1000
 
         self._reload_info = {'domain_name': domain_name,
                             'task_name': task_name,
