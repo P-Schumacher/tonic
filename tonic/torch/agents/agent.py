@@ -34,8 +34,9 @@ class Agent(agents.Agent):
             load_fn = partial(torch.load, map_location='cuda')
         try:
             self.model.load_state_dict(load_fn(path))
-        except Exception:
+        except Exception as e:
             logger.log('Error, not loading model')
+            logger.log(f'{e=}')
         if not play:
             try:
                 self.load_optimizer(load_fn, path)
