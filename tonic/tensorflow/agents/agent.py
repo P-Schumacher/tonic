@@ -69,23 +69,35 @@ class Agent(agents.Agent):
             if hasattr(self, updater):
                 if hasattr(getattr(self, updater), 'optimizer'):
                     opt = getattr(self, updater).optimizer
-                    opt_path = self.get_path(path, updater)
-                    torch.save(opt.get_weights(), opt_path)
+                elif hasattr(getattr(self, updater), 'actor_optimizer'):
+                    opt = getattr(self, updater).actor_optimizer
+                else:
+                    raise NotImplementedError
+                opt_path = self.get_path(path, updater)
+                torch.save(opt.get_weights(), opt_path)
 
     def load_optimizer(self, path):
         for updater in ['actor_updater', 'critic_updater']:
             if hasattr(self, updater):
                 if hasattr(getattr(self, updater), 'optimizer'):
                     opt = getattr(self, updater).optimizer
-                    opt_path = self.get_path(path, updater)
-                    load_dict = torch.load(opt_path)
-                    if 'actor' in updater:
-                        grad_vars = self.actor_updater.model.actor.trainable_variables
-                    else:
+                elif hasattr(getattr(self, updater), 'actor_optimizer'):
+                    opt = getattr(self, updater).actor_optimizer
+                    dual_opt = getattr(self, updater).dual_optimizer
+                else:
+                    raise NotImplementedError
+                opt_path = self.get_path(path, updater)
+                load_dict = torch.load(opt_path)
+                if 'actor' in updater:
+                    grad_vars = self.actor_updater.model.actor.trainable_variables
+                else:
+                    if hasattr(self.critic_updater.model, 'critic_1'):
                         grad_vars = self.critic_updater.model.critic_1.trainable_variables + self.critic_updater.model.critic_2.trainable_variables
-                    zero_grads = [tf.zeros_like(w) for w in grad_vars]
-                    opt.apply_gradients(zip(zero_grads, grad_vars))
-                    opt.set_weights(load_dict)
+                    else:
+                        grad_vars = self.critic_updater.model.critic.trainable_variables
+                zero_grads = [tf.zeros_like(w) for w in grad_vars]
+                opt.apply_gradients(zip(zero_grads, grad_vars))
+                opt.set_weights(load_dict)
 
     def load_model(self, path):
         self.model.load_weights(path)
@@ -109,16 +121,21 @@ class Agent(agents.Agent):
         return path.split('step')[0] + post_fix + '.pt'
 
     def load(self, path, play=None):
+        """
+        # TODO Loading only works correctly for the model, do not continue training!
+        """
         loading = {'optimizer': self.load_optimizer,
                    'model': self.load_model,
                    'obs_normalization': self.load_observation_normalizer,
-                   'return_normalization': self.load_return_normalizer,
+                   # 'return_normalization': self.load_return_normalizer,
                    'buffer': lambda x: self.load_buffer(torch.load, x)}
+        # loading = {'model': self.load_model}
         if not play:
             for k, load_fn in loading.items():
                 try:
                     load_fn(path)
-                except:
-                    logger.log(f'Loading of {k} failed, skipping')
+                except Exception as e:
+                    logger.log(f'Loading of {k} failed. skipping')
+                    logger.log(f'Error was {e}')
         else:
             self.load_model(path)
