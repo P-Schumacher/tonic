@@ -85,6 +85,9 @@ def _flatten_observation(observation):
                    for o in observation.values()]
     return np.concatenate(observation, axis=0)
 
+class Spec:
+    def __init__(self):
+        self.max_episode_steps = 1000
 
 class ControlSuiteEnvironment(gym.core.Env):
     '''Turns a Control Suite environment into a Gym environment.'''
@@ -93,6 +96,7 @@ class ControlSuiteEnvironment(gym.core.Env):
         self, domain_name, task_name, task_kwargs=None, visualize_reward=True,
         environment_kwargs=None
     ):
+        self.spec = Spec()
         from dm_control import suite
         self.environment = suite.load(
             domain_name=domain_name, task_name=task_name,
