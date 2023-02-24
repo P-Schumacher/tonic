@@ -8,7 +8,7 @@ setuptools.setup(
     version='0.3.0',
     author='Fabio Pardo',
     author_email='f.pardo@imperial.ac.uk',
-    packages=['tonic']
+    packages=['tonic'],
     install_requires=[
         'gym', 'matplotlib', 'numpy', 'pandas', 'pyyaml', 'termcolor'],
     license='MIT',
