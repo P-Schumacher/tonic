@@ -4,7 +4,7 @@ import time
 
 import wandb
 import yaml
-from tonic import utils.csv_utils as utils
+from tonic import utils
 
 
 class WandbProcessor:
