@@ -23,4 +23,8 @@ class Agent(agents.Agent):
     def load(self, path):
         path = path + '.pt'
         logger.log(f'\nLoading weights from {path}')
-        self.model.load_state_dict(torch.load(path))
+        if torch.cuda.is_available():
+            self.model.load_state_dict(torch.load(path))
+        else:
+            self.model.load_state_dict(torch.load(path, map_location='cpu'))
+
