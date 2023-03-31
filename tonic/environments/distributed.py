@@ -68,9 +68,9 @@ class Sequential:
         infos = dict(
             observations=np.array(next_observations, np.float32),
             rewards=np.array(rewards, np.float32),
-            resets=np.array(resets, np.bool),
-            terminations=np.array(terminations, np.bool),
-            env_infos=np.array(env_infos, np.float32))
+            resets=np.array(resets, bool),
+            terminations=np.array(terminations, bool),
+            env_infos=env_infos)
         return observations, muscles_dep, infos
 
     def render(self, mode='human', *args, **kwargs):
@@ -159,13 +159,13 @@ class Parallel:
         self.rewards_list = np.zeros(
             (self.worker_groups, self.workers_per_group), np.float32)
         self.resets_list = np.zeros(
-            (self.worker_groups, self.workers_per_group), np.bool)
+            (self.worker_groups, self.workers_per_group), bool)
         self.terminations_list = np.zeros(
-            (self.worker_groups, self.workers_per_group), np.bool)
+            (self.worker_groups, self.workers_per_group), bool)
         self.terminations_list = np.zeros(
-            (self.worker_groups, self.workers_per_group), np.bool)
+            (self.worker_groups, self.workers_per_group), bool)
         self.env_infos_list= np.zeros(
-            (self.worker_groups, self.workers_per_group), np.float32)
+            (self.worker_groups, self.workers_per_group), float)
 
         return np.concatenate(self.observations_list), np.concatenate(self.muscles_dep_list)
 
