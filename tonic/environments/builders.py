@@ -8,6 +8,11 @@ from tonic import environments
 from tonic.utils import logger
 
 
+class Spec:
+    def __init__(self, time_limit):
+        self.time_limit = time_limit
+
+
 def gym_environment(*args, **kwargs):
     '''Returns a wrapped Gym environment.'''
 
@@ -34,6 +39,7 @@ def control_suite_environment(*args, **kwargs):
         environment = ControlSuiteEnvironment(
             domain_name=domain, task_name=task, *args, **kwargs)
         time_limit = int(environment.environment._step_limit)
+        environment.spec = Spec(time_limit)
         return gym.wrappers.TimeLimit(environment, time_limit)
 
     return build_environment(_builder, *args, **kwargs)
@@ -153,10 +159,10 @@ class ControlSuiteEnvironment(gym.core.Env):
         except Exception as e:
             path = logger.get_path()
             os.makedirs(path, exist_ok=True)
-            save_path = os.path.join(path, 'crashes.txt')
+            # save_path = os.path.join(path, 'crashes.txt')
             error = str(e)
-            with open(save_path, 'a') as file:
-                file.write(error + '\n')
+            # with open(save_path, 'a') as file:
+            #     file.write(error + '\n')
             logger.error(error)
             observation = _flatten_observation(self.last_time_step.observation)
             observation = np.zeros_like(observation)

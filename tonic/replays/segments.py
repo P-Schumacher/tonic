@@ -64,6 +64,12 @@ class Segment:
                     indices = all_indices[i:i + self.batch_size]
                     yield {k: v[indices] for k, v in batch.items()}
 
+    def save(self, *args, **kwargs):
+        pass
+
+    def load(self, *args, **kwargs):
+        pass
+
     def compute_returns(self, values, next_values):
         shape = self.buffers['rewards'].shape
         self.buffers['values'] = values.reshape(shape)

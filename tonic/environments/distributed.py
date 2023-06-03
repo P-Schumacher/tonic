@@ -53,7 +53,12 @@ class Sequential:
             rewards.append(rew)
             resets.append(reset)
             terminations.append(term)
+<<<<<<< HEAD
             env_infos.append(env_info['performance_condition'])
+=======
+            if 'cost_coeff' in env_info:
+                env_infos.append(env_info['cost_coeff'])
+>>>>>>> c631ce5 (updates)
 
             if reset:
                 ob = self.environments[i].reset()
@@ -165,7 +170,11 @@ class Parallel:
         self.terminations_list = np.zeros(
             (self.worker_groups, self.workers_per_group), bool)
         self.env_infos_list= np.zeros(
+<<<<<<< HEAD
             (self.worker_groups, self.workers_per_group), float)
+=======
+            (self.worker_groups, self.workers_per_group), np.float32)
+>>>>>>> c631ce5 (updates)
 
         return np.concatenate(self.observations_list), np.concatenate(self.muscles_dep_list)
 
@@ -182,8 +191,15 @@ class Parallel:
             self.resets_list[index] = infos['resets']
             self.terminations_list[index] = infos['terminations']
             self.muscles_dep_list[index] = tendon_state
+<<<<<<< HEAD
             # self.env_infos_list.append(infos['env_infos'])
             self.env_infos_list[index] = infos['env_infos']
+=======
+            try:
+                self.env_infos_list[index] = infos['env_infos']
+            except:
+                pass
+>>>>>>> c631ce5 (updates)
             # if self.worker_groups == 1:
             #     self.env_infos_list.append(infos['env_infos'])
 

@@ -27,6 +27,7 @@ class Agent(agents.Agent):
 
         logger.log(f'\nSaving weights to {path}')
         self.model.save_weights(path)
+        return
         path = path + '.pt'
         self.save_return_normalizer(path)
         self.save_observation_normalizer(path)

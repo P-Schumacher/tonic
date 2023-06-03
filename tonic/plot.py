@@ -47,6 +47,8 @@ def stats(xs, means, stds):
     mean = means.mean(axis=0)
     min_mean = means.min(axis=0)
     max_mean = means.max(axis=0)
+    print(f'{np.min(min_mean)=}')
+    print(f'at {int(x[np.argmin(min_mean)])}')
     print(f'{np.max(max_mean)=}')
     print(f'at {int(x[np.argmax(max_mean)])}')
     if stds is not None:
@@ -92,7 +94,10 @@ def get_data(
             env, agent, seed = sub_path.split(os.sep)[-3:]
 
             # Load the data.
-            df_seed = pd.read_csv(path, sep=',', engine='python')
+            try:
+                df_seed = pd.read_csv(path, sep=',', engine='python')
+            except pd.errors.ParserError as e:
+                raise Exception(f'Run failed to load! {path=}, {e=}')
             x = df_seed[x_axis].values
             # The x axis should be sorted.
             # if not np.all(np.diff(x) > 0):
